@@ -1,5 +1,4 @@
-import { Box, Button, CircularProgress, Typography } from "@mui/material"
-import SelectField from "../src/Components/SelectField"
+import SelectField from "../src/Components/SelectField";
 import TextFieldComp from "../src/Components/TextFieldComp";
 import useAxios from "../src/hooks/useAxios";
 import { useNavigate } from "react-router-dom";
@@ -9,50 +8,49 @@ const Settings = () => {
   const navigate = useNavigate();
 
   if (loading) {
-    return (
-      <Box mt={20}>
-        <CircularProgress />
-      </Box>
-    );
+    return <div className="mt-20 text-center">Loading...</div>;
   }
 
-  if(error) {
+  if (error) {
     return (
-      <Typography variant="h6" mt={20} color="red">
+      <div className="mt-20 text-center text-red-500">
         Something Went Wrong!
-      </Typography>
-    )
+      </div>
+    );
   }
 
   const difficultyOptions = [
     { id: "easy", name: "Easy" },
     { id: "medium", name: "Medium" },
     { id: "hard", name: "Hard" },
-  ]
- 
+  ];
+
   const typeOptions = [
     { id: "multiple", name: "Multiple Choice" },
     { id: "boolean", name: "True/False" },
-  ]
+  ];
 
-  const handleSubmit = e => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     navigate("/questions");
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="text-left">
       <SelectField options={response.trivia_categories} label="Category" />
       <SelectField options={difficultyOptions} label="Difficulty" />
-      <SelectField options={typeOptions}  label="Type" />
+      <SelectField options={typeOptions} label="Type" />
       <TextFieldComp />
-      <Box mt={3} width="100%"> 
-        <Button variant="contained" fullWidth type="submit">
+      <div className="mt-5">
+        <button
+          type="submit"
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
           Get Started
-        </Button>
-      </Box>
+        </button>
+      </div>
     </form>
-  )
-}
+  );
+};
 
-export default Settings
+export default Settings;

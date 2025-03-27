@@ -1,23 +1,21 @@
-import { Box, Button, CircularProgress, Typography } from '@mui/material'
-import useAxios from '../src/hooks/useAxios'
-import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { handleScoreChange } from '../redux/actions';
-import { decode } from 'html-entities';
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { handleScoreChange } from "../redux/actions";
+import { decode } from "html-entities";
+import useAxios from "../src/hooks/useAxios";
 
 const getRandomInt = (max) => {
-  return Math.floor(Math.random() * Math.floor(max)); 
-}
+  return Math.floor(Math.random() * Math.floor(max));
+};
 
 const Questions = () => {
-
   const {
     question_category,
     question_difficulty,
     question_type,
     amount_of_question,
-    score
+    score,
   } = useSelector((state) => state);
 
   const navigate = useNavigate();
@@ -36,61 +34,61 @@ const Questions = () => {
   if (question_type) {
     apiUrl = apiUrl.concat(`&type=${question_type}`);
   }
-  
-  const { response, loading } = useAxios ({ url: apiUrl });
+
+
+  const { response, loading } = useAxios({ url: apiUrl });
   const [questionIndex, setQuestionIndex] = useState(0);
   const [options, setOptions] = useState([]);
-  
 
   useEffect(() => {
-    if(response?.results.length) {
+    if (response?.results.length) {
       const question = response.results[questionIndex];
       let answers = [...question.incorrect_answers];
-      answers.splice (
-        getRandomInt(question.incorrect_answers.length), 0, question.correct_answer
+      answers.splice(
+        getRandomInt(question.incorrect_answers.length),
+        0,
+        question.correct_answer
       );
       setOptions(answers);
-      
     }
   }, [response, questionIndex]);
 
   if (loading) {
-    return (
-      <Box mt={20}>
-        <CircularProgress />
-      </Box>
-    );
+    return <div className="mt-20 text-center">Loading...</div>;
   }
 
   const handleClickAnswer = (e) => {
     const question = response.results[questionIndex];
     if (e.target.textContent === question.correct_answer) {
-      dispatch(handleScoreChange(score+1));
+      dispatch(handleScoreChange(score + 1));
     }
 
     if (questionIndex + 1 < response.results.length) {
       setQuestionIndex(questionIndex + 1);
     } else {
-      navigate("/score")
+      navigate("/score");
     }
-  }
+  };
 
   return (
-    <Box>
-      <Typography variant='h4'>{questionIndex + 1}</Typography> 
-      <Typography mt={5}>
-        {decode(response.results[questionIndex].question)}
-      </Typography> 
+    <div className="text-center">
+      <h2 className="text-xl font-bold">Question {questionIndex + 1}</h2>
+      <p className="mt-5">{decode(response.results[questionIndex].question)}</p>
       {options.map((data, id) => (
-        <Box mt={2} key={id}>
-          <Button onClick={handleClickAnswer} variant='contained'>
+        <div key={id} className="mt-3">
+          <button
+            onClick={handleClickAnswer}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
             {decode(data)}
-          </Button>
-        </Box>
+          </button>
+        </div>
       ))}
-      <Box mt={5}> Score: {score} / {response.results.length}</Box>
-    </Box>
-  )
-}
+      <div className="mt-5">
+        Score: {score} / {response.results.length}
+      </div>
+    </div>
+  );
+};
 
-export default Questions
+export default Questions;
