@@ -23,7 +23,7 @@ export default function Login() {
         navigate('/dashboard');
       }
     } catch (error) {
-      
+      console.log(error)
     }
   }
 
