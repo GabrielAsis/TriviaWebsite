@@ -8,7 +8,7 @@ const Settings = () => {
   const navigate = useNavigate();
 
   if (loading) {
-    return <div className="mt-20 text-center">Loading...</div>;
+    return <div className="mt-20 text-center">Loading....</div>;
   }
 
   if (error) {
