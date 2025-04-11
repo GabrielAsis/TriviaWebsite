@@ -1,25 +1,27 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 
-axios.defaults.baseURL = "https://opentdb.com/"
+const customAxios = axios.create({
+  baseURL: "https://opentdb.com",
+});
 
 const useAxios = ({ url }) => {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { 
+  useEffect(() => {
     const fetchData = () => {
-      axios
+      customAxios
         .get(url)
         .then(res => setResponse(res.data))
         .catch(err => setError(err))
-        .finally(() => setLoading(false))
-    }
+        .finally(() => setLoading(false));
+    };
     fetchData();
   }, [url]);
 
- return{ response, error, loading }
-}
+  return { response, error, loading };
+};
 
-export default useAxios
+export default useAxios;

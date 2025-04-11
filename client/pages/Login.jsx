@@ -1,31 +1,34 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../context/userContext';
 
 export default function Login() {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const { setUser } = useContext(UserContext); // Access setUser from UserContext
 
   const [data, setData] = useState({
     email: '',
     password: ''
-  })
+  });
 
   const loginUser = async (e) => {
-    e.preventDefault()
-    const {email, password} = data;
+    e.preventDefault();
+    const { email, password } = data;
     try {
-      const {data} = await axios.post('/login', {email, password});
-      if(data.error) {
-        toast.error(data.error)
+      const { data } = await axios.post('/login', { email, password });
+      if (data.error) {
+        toast.error(data.error);
       } else {
         setData({});
+        setUser(data); // Update UserContext with the logged-in user's data
         navigate('/dashboard');
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   return (
     <div>
@@ -33,16 +36,17 @@ export default function Login() {
         <div className='grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-1'>
           {/* EMAIL INPUT */}
           <div className="">
-              <label className="block text-sm/6 font-medium text-gray-900 text-left">
-                Email
-              </label>
-              <div className="mt-2">
-                <input
-                  type="email"
-                  value={data.email} onChange={(e) => setData({...data, email: e.target.value})}
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                />
-              </div>
+            <label className="block text-sm/6 font-medium text-gray-900 text-left">
+              Email
+            </label>
+            <div className="mt-2">
+              <input
+                type="email"
+                value={data.email}
+                onChange={(e) => setData({ ...data, email: e.target.value })}
+                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+              />
+            </div>
           </div>
 
           {/* PASSWORD INPUT */}
@@ -53,7 +57,8 @@ export default function Login() {
             <div className="mt-2">
               <input
                 type="password"
-                value={data.password} onChange={(e) => setData({...data, password: e.target.value})}
+                value={data.password}
+                onChange={(e) => setData({ ...data, password: e.target.value })}
                 className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
               />
             </div>
@@ -69,5 +74,5 @@ export default function Login() {
         </div>
       </form>
     </div>
-  )
+  );
 }

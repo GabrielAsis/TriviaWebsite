@@ -12,8 +12,10 @@ const Settings = () => {
   }
 
   if (error) {
+    console.log("Error Details:", error);  // Log the actual error message
+  console.log("Response Data:", response);  // Log the response data
     return (
-      <div className="mt-20 text-center text-red-500">
+      <div className="mt-20 text-center text-r  d-500">
         Something Went Wrong!
       </div>
     );
