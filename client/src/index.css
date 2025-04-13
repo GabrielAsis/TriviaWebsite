@@ -39,6 +39,8 @@ body {
 
   p {
     font-size: 1.1rem;
+    font-weight: lighter;
+    color: (var(--color-gray));
   }
 
   @media screen and (max-width: 1025px) {
@@ -64,7 +66,6 @@ body {
 
     p {
       font-size: 1rem;
-      color: var(--color-gray);
     }
   } 
 
@@ -136,38 +137,47 @@ body {
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.606 0.25 292.717);
-  --primary-foreground: oklch(0.969 0.016 293.756);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.606 0.25 292.717);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.606 0.25 292.717);
-  --sidebar-primary-foreground: oklch(0.969 0.016 293.756);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.606 0.25 292.717);
+  --background: #ffffff; /* off-white */
+  --foreground: #0D0D16; /* black/text color */
+  --card: #ffffff;
+  --card-foreground: #0D0D16;
+  --popover: #F7F7FC;
+  --popover-foreground: #0D0D16;
+
+  --primary: #3C39C7;
+  --primary-foreground: #ffffff;
+
+  --secondary: #5652F2;
+  --secondary-foreground: #ffffff;
+
+  --muted: #444444;
+  --muted-foreground: #ffffff;
+
+  --accent: #9290EC;
+  --accent-foreground: #ffffff;
+
+  --destructive: #FF5F56; /* you didn't provide a destructive color, so I picked a common one; change if needed */
+
+  --border: #9290EC;
+  --input: #9290EC;
+  --ring: #3C39C7;
+
+  --chart-1: #FF9F1C;
+  --chart-2: #2EC4B6;
+  --chart-3: #3C39C7;
+  --chart-4: #E71D36;
+  --chart-5: #FFBF69;
+
+  --sidebar: #F7F7FC;
+  --sidebar-foreground: #0D0D16;
+  --sidebar-primary: #3C39C7;
+  --sidebar-primary-foreground: #F7F7FC;
+  --sidebar-accent: #9290EC;
+  --sidebar-accent-foreground: #0D0D16;
+  --sidebar-border: #9290EC;
+  --sidebar-ring: #3C39C7;
 }
+
 
 @layer base {
   * {
@@ -178,3 +188,7 @@ body {
   }
 }
 
+/* UTILITY CLASSES */
+.container {
+  @apply mx-auto max-w-6xl px-4 sm:px-6 lg:px-8;
+}

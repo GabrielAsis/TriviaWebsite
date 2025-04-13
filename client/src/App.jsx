@@ -23,24 +23,22 @@ function App() {
   return (
     <UserContextProvider>
       <Router>
-        <div className=" max-w-6xl mx-auto text-center mt-10 px-6">
-          <NavBar />
-          <Toaster position='bottom-right' toastOptions={{duration: 2000}}/>
-          <Routes>
-            <Route path="/" element={<Home />} exact/>
-            <Route path="/register" element={<Register />} />
+        <NavBar />
+        <Toaster position='bottom-right' toastOptions={{duration: 2000}}/>
+        <Routes>
+          <Route path="/" element={<Home />} exact/>
+          <Route path="/register" element={<Register />} />
 
-            <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} />
 
-            <Route path="/dashboard" element={<Dashboard />} />
-            
-            <Route path="/settings" element={<Settings />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          
+          <Route path="/settings" element={<Settings />} />
 
-            <Route path="/questions" element={<Questions />} />
+          <Route path="/questions" element={<Questions />} />
 
-            <Route path="/score" element={<FinalScore />} />
-          </Routes>
-        </div>
+          <Route path="/score" element={<FinalScore />} />
+        </Routes>
       </Router>
     </ UserContextProvider>
   );
