@@ -1,31 +1,35 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
+
 import { Menu, X } from 'lucide-react'
 
+import FadeInUp from "../Components/animations/FadeUp";
 
 const NavBar = () => {
   const [open, setOpen] = useState(false)
 
   return (
     <header className="bg-transparent fixed top-0 z-50 w-full py-6">
-      <div className="container flex items-center justify-between">
+      <FadeInUp className="container flex items-center justify-between">
         <div className="flex lg:flex-1">
           <Link to="/" className="flex flex-row justify-center items-center space-x-6">
             <img
               alt="Logo"
               src="../../public/Images/Trivio Logo Icon.png"
               className="h-16 w-auto"
-            />
+              />
 
             <h2 className='text-white'>Trivio</h2>
           </Link>
         </div>
+
 
         {/* MOBILE NAV */}
         <div className="flex lg:hidden">
@@ -53,16 +57,17 @@ const NavBar = () => {
 
         {/* DESKTOP NAV */}
         <nav className="hidden lg:flex lg:gap-x-8 text-off-white">
+
           <Link to="/categories" className="text-sm">
-            <Button variant='ghost' className='rounded-md'>Categories</Button>
+            <Button variant='ghost' className='rounded-md font-normal'>Categories</Button>
           </Link>
 
           <Link to="/leaderboards" className="text-sm">
-            <Button variant='ghost' className='rounded-md'>Leaderboards</Button>
+            <Button variant='ghost' className='rounded-md font-normal'>Leaderboards</Button>
           </Link>
 
           <Link to="/modes" className="text-sm">
-            <Button variant='ghost' className='rounded-md'>Modes</Button>
+            <Button variant='ghost' className='rounded-md font-normal'>Modes</Button>
           </Link>
         </nav>
 
@@ -75,7 +80,7 @@ const NavBar = () => {
             <Button variant='white'>Sign Up</Button>
           </Link>
         </div>
-      </div>
+      </FadeInUp>
     </header>
   )
 }

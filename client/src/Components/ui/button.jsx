@@ -28,9 +28,9 @@ const buttonVariants = cva(
           "border-white border-1 bg-none text-white shadow-xs hover:bg-white/10",
       },
       size: {
-        default: "h-9 px-5 py-2 ",
+        default: "h-10 px-4 py-2 ",
         sm: "h-8 gap-1.5 px-3",
-        lg: "h-10 px-4 ",
+        lg: "h-9 px-3 ",
         icon: "size-9",
       },
     },
