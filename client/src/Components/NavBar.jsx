@@ -22,7 +22,7 @@ const NavBar = () => {
           <Link to="/" className="flex flex-row justify-center items-center space-x-6">
             <img
               alt="Logo"
-              src="../../public/Images/Trivio Logo Icon.png"
+              src="../../src/assets/Trivio Logo Icon.png"
               className="h-16 w-auto"
               />
 
