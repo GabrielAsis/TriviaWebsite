@@ -82,7 +82,7 @@ export default function Home() {
 
       {/* MODES */}
       <div className='relative z-50 container mt-[-6rem]'>
-        <div className='grid grid-cols-1 md:grid-cols-3 space-y-4 md:space-x-2 lg:space-x-4'>
+        <FadeInUp triggerStart='top 50%' className='grid grid-cols-1 md:grid-cols-3 space-y-4 md:space-x-2 lg:space-x-4'>
           {modes.map((mode, index) => (
             <Card key={`${mode.id}-${index}`} className='border-none justify-between md:min-h-full'>
               <CardHeader className='space-y-4'>
@@ -97,8 +97,11 @@ export default function Home() {
               </CardFooter>
             </Card>
           ))}
-        </div>
+        </FadeInUp>
       </div>
+
+      {/* BENEFITS SECTION*/}
+      <div className='h-[100vh]'></div>
     </>
   )
 }

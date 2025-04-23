@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 import {
@@ -14,19 +14,29 @@ import FadeInUp from "../Components/animations/FadeUp";
 
 const NavBar = () => {
   const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
-    <header className="bg-transparent fixed top-0 z-50 w-full py-6">
-      <FadeInUp className="container flex items-center justify-between">
+    <FadeInUp className={`bg-transparent fixed top-0 z-100 w-full py-2 px-4 sm:px-6 lg:px-8 xl:px-0`}>
+      <div className={`mx-auto max-w-7xl flex items-center justify-between transition-all duration-500 rounded-full ${scrolled ? 'py-3 px-6 bg-primary/60 backdrop-blur-sm' : ' py-6'}`}>
         <div className="flex lg:flex-1">
-          <Link to="/" className="flex flex-row justify-center items-center space-x-6">
+          <Link to="/" className="flex flex-row justify-center items-center space-x-4 scale-100">
             <img
               alt="Logo"
               src="../../src/assets/Trivio Logo Icon.png"
-              className="h-16 w-auto"
+              className={`w-auto transition-all duration-500 ${scrolled ? 'h-11' : 'h-16'}`}
               />
 
-            <h2 className='text-white'>Trivio</h2>
+            <h2 className={`text-white transition-all duration-500 ${scrolled ? 'text-[1.5rem]' : 'text-2rem'}`}>Trivio</h2>
           </Link>
         </div>
 
@@ -80,8 +90,8 @@ const NavBar = () => {
             <Button variant='white'>Sign Up</Button>
           </Link>
         </div>
-      </FadeInUp>
-    </header>
+      </div>
+    </FadeInUp>
   )
 }
 

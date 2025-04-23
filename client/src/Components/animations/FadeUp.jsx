@@ -1,9 +1,10 @@
 // components/animations/FadeInUp.jsx
 import React, { useRef } from "react"
 import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 
-gsap.registerPlugin(useGSAP)
+gsap.registerPlugin(ScrollTrigger, useGSAP)
 
 export default function FadeInUp({
   children,
@@ -11,19 +12,34 @@ export default function FadeInUp({
   duration = 1,
   yOffset = 30,
   stagger = 0.2,
+  triggerStart = "top 90%",
+  toggleActions = "play none none none",
+  useScrollTrigger = true,
+  showMarkers = false, // 👈 toggle GSAP markers
   className = "",
 }) {
   const ref = useRef(null)
 
   useGSAP(() => {
-    gsap.from(ref.current?.children, {
+    const animationConfig = {
       y: yOffset,
       opacity: 0,
       duration,
       delay,
       stagger,
       ease: "circ.inOut",
-    })
+    }
+
+    if (useScrollTrigger) {
+      animationConfig.scrollTrigger = {
+        trigger: ref.current,
+        start: triggerStart,
+        toggleActions,
+        markers: showMarkers, // 👈 controlled by prop
+      }
+    }
+
+    gsap.from(ref.current?.children, animationConfig)
   }, [])
 
   return (
