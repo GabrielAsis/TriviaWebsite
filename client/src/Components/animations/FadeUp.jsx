@@ -15,8 +15,9 @@ export default function FadeInUp({
   triggerStart = "top 90%",
   toggleActions = "play none none none",
   useScrollTrigger = true,
-  showMarkers = false, // 👈 toggle GSAP markers
+  showMarkers = false,
   className = "",
+  id = "",
 }) {
   const ref = useRef(null)
 
@@ -35,7 +36,7 @@ export default function FadeInUp({
         trigger: ref.current,
         start: triggerStart,
         toggleActions,
-        markers: showMarkers, // 👈 controlled by prop
+        markers: showMarkers,
       }
     }
 
@@ -43,7 +44,7 @@ export default function FadeInUp({
   }, [])
 
   return (
-    <div ref={ref} className={className}>
+    <div ref={ref} className={className} id={id}>
       {children}
     </div>
   )
