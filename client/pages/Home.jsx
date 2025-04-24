@@ -11,8 +11,6 @@ import FadeInUp from '../src/Components/animations/FadeUp';
 
 import { modes } from "../src/constants"
 
-import SVG from "../src/assets/Custom Mode.svg?react"
-
 
 gsap.registerPlugin(useGSAP);
 

@@ -6,6 +6,9 @@ import {
   endlessSvg,
   grainyFilter,
   spiralShape,
+  thinkingAvatar,
+  endlessPng,
+  blitzPng,
 } from "../assets"
 
 // MODES DATA
