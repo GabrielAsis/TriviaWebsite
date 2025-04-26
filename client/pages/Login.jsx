@@ -4,9 +4,16 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/userContext';
 
+// shadcn imports
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
+// assets imports
+import { logo } from '../src/assets';
+
 export default function Login() {
   const navigate = useNavigate();
-  const { setUser } = useContext(UserContext); // Access setUser from UserContext
+  const { setUser } = useContext(UserContext);
 
   const [data, setData] = useState({
     email: '',
@@ -22,8 +29,8 @@ export default function Login() {
         toast.error(data.error);
       } else {
         setData({});
-        setUser(data); // Update UserContext with the logged-in user's data
-        navigate('/dashboard');
+        setUser(data);
+        toast.success('Login Successful. Welcome Back!');
       }
     } catch (error) {
       console.log(error);
@@ -31,48 +38,56 @@ export default function Login() {
   };
 
   return (
-    <div>
-      <form onSubmit={loginUser}>
-        <div className='grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-1'>
-          {/* EMAIL INPUT */}
-          <div className="">
-            <label className="block text-sm/6 font-medium text-gray-900 text-left">
-              Email
-            </label>
-            <div className="mt-2">
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="whiteOutline">
+          Log In
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="text-center inline">
+            <div className='flex flex-row justify-center items-center space-x-2'>
+              <h2>Welcome to <span className='text-primary'>Trivio</span></h2>
+              <img src={logo} className='w-7 h-auto' />
+            </div>
+          </DialogTitle>
+          <DialogDescription>Access your account to continue.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={loginUser}>
+          <div className="grid grid-cols-1 gap-4">
+            {/* EMAIL INPUT */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900">Email</label>
               <input
                 type="email"
                 value={data.email}
                 onChange={(e) => setData({ ...data, email: e.target.value })}
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                className="block w-full rounded-md border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               />
             </div>
-          </div>
 
-          {/* PASSWORD INPUT */}
-          <div className="">
-            <label className="block text-sm/6 font-medium text-gray-900 text-left">
-              Password
-            </label>
-            <div className="mt-2">
+            {/* PASSWORD INPUT */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900">Password</label>
               <input
                 type="password"
                 value={data.password}
                 onChange={(e) => setData({ ...data, password: e.target.value })}
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                className="block w-full rounded-md border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               />
             </div>
-          </div>
 
-          {/* SUBMIT BUTTON */}
-          <button
-            type="submit"
-            className="col-span-1 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full"
-          >
-            Submit
-          </button>
-        </div>
-      </form>
-    </div>
+            {/* SUBMIT BUTTON */}
+            <button
+              type="submit"
+              className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500"
+            >
+              Submit
+            </button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

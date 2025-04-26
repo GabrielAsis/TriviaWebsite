@@ -8,8 +8,12 @@ const userSchema = new Schema({
     unique: true,
   },
   password: String,
+  points: {
+    type: Number,
+    default: 0, // Initialize points to 0 for new users
+  },
 });
 
 const UserModel = mongoose.model('User', userSchema);
-
+ 
 module.exports = UserModel;
