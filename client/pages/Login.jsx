@@ -7,11 +7,12 @@ import { UserContext } from '../context/userContext';
 // shadcn imports
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 // assets imports
 import { logo } from '../src/assets';
 
-export default function Login() {
+export default function Login({ isOpen, setIsOpen, openRegister }) {
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
 
@@ -38,53 +39,64 @@ export default function Login() {
   };
 
   return (
-    <Dialog>
+    <Dialog  open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="whiteOutline">
           Log In
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="text-center inline">
-            <div className='flex flex-row justify-center items-center space-x-2'>
-              <h2>Welcome to <span className='text-primary'>Trivio</span></h2>
-              <img src={logo} className='w-7 h-auto' />
-            </div>
-          </DialogTitle>
-          <DialogDescription>Access your account to continue.</DialogDescription>
-        </DialogHeader>
         <form onSubmit={loginUser}>
-          <div className="grid grid-cols-1 gap-4">
-            {/* EMAIL INPUT */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900">Email</label>
-              <input
-                type="email"
-                value={data.email}
-                onChange={(e) => setData({ ...data, email: e.target.value })}
-                className="block w-full rounded-md border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
+          <div className="grid grid-cols-1 gap-6">
+            {/* HEADER & DESC */}
+            <div className='space-y-2'>
+              <div className='flex flex-row justify-center items-center space-x-3'>
+                <h2>Welcome back to <span className='text-primary'>Trivio</span></h2>
+                <img src={logo} className='w-8 h-auto' alt="Trivio Logo" />
+              </div>
+              <p className='text-center text-gray'>Sign in to start racking up points, climb the leaderboard, and track your trivia progress across all categories.</p>
             </div>
 
-            {/* PASSWORD INPUT */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900">Password</label>
-              <input
-                type="password"
-                value={data.password}
-                onChange={(e) => setData({ ...data, password: e.target.value })}
-                className="block w-full rounded-md border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
+            {/* INPUTS */}
+            <div className='space-y-4'>
+              {/* EMAIL INPUT */}
+              <div className='space-y-2'>
+                <label className="block text-sm font-medium text-gray">Email</label>
+                <Input
+                  type="email"
+                  value={data.email}
+                  placeholder="Enter your email"
+                  onChange={(e) => setData({ ...data, email: e.target.value })}
+                />
+              </div>
+
+              {/* PASSWORD INPUT */}
+              <div className='space-y-2'>
+                <label className="block text-sm font-medium text-gray">Password</label>
+                <Input
+                  type="password"
+                  value={data.password}
+                  placeholder="Enter your password"
+                  onChange={(e) => setData({ ...data, password: e.target.value })}
+                />
+              </div>
             </div>
 
             {/* SUBMIT BUTTON */}
-            <button
+            <Button
               type="submit"
-              className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500"
             >
-              Submit
-            </button>
+              Login
+            </Button>
+
+            <div>
+              <p className='text-gray text-center'>Don't have an account? <span 
+                className='text-foreground font-medium underline cursor-pointer hover:text-gray'
+                onClick={openRegister}
+              >
+                Sign Up!
+              </span></p>
+            </div>
           </div>
         </form>
       </DialogContent>

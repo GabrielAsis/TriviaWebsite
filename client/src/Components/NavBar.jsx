@@ -19,6 +19,9 @@ const NavBar = () => {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
+  const [openLogin, setOpenLogin] = useState(false);
+  const [openRegister, setOpenRegister] = useState(false);
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50)
@@ -66,8 +69,22 @@ const NavBar = () => {
                     <Button variant='white'>Sign Up</Button>
                   </Link> */}
                   <div className='flex flex-col space-y-4 w-fit'>
-                    < Login />
-                    < Register />
+                    < Login 
+                      isOpen={openLogin}
+                      setIsOpen={setOpenLogin}
+                      openRegister={() => {
+                        setOpenLogin(false);  // close login
+                        setOpenRegister(true);  // open register
+                      }}
+                    />
+                    < Register 
+                      isOpen={openRegister}
+                      setIsOpen={setOpenRegister}
+                      openLogin={() => {
+                        setOpenRegister(false);
+                        setOpenLogin(true);
+                      }}
+                    />
                   </div>
                 </div>
               </SheetContent>
@@ -99,8 +116,22 @@ const NavBar = () => {
               <Button variant='white'>Sign Up</Button>
             </Link> */}
 
-            < Login />
-            < Register />
+            < Login 
+              isOpen={openLogin}
+              setIsOpen={setOpenLogin}
+              openRegister={() => {
+                setOpenLogin(false);  // close login
+                setOpenRegister(true);  // open register
+              }}
+            />
+            < Register 
+              isOpen={openRegister}
+              setIsOpen={setOpenRegister}
+              openLogin={() => {
+                setOpenRegister(false);
+                setOpenLogin(true);
+              }}
+            />
           </div>
         </div>
       </FadeInUp>
