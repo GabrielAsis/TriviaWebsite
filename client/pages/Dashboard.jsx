@@ -31,6 +31,12 @@ export const Dashboard = () => {
   // Use refreshed user data if available, fall back to context user
   const displayUser = refreshedUser || user;
 
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Remove the token from localStorage
+    setUser(null); // Clear user context
+    window.location.href = '/'; // Redirect to home or another page after logout
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -46,6 +52,9 @@ export const Dashboard = () => {
           )}
         </>
       )}
+      <button onClick={handleLogout} className="mt-4 p-2 bg-red-600 text-white rounded-md">
+        Logout
+      </button>
     </div>
   );
-};
+}; 

@@ -29,6 +29,8 @@ export default function Register({ isOpen, setIsOpen, openLogin }) {
       } else {
         setData({});
         toast.success('Registration Successful. Welcome!');
+        setIsOpen(false);
+        openLogin();
       }
     } catch (error) {
       console.log(error);

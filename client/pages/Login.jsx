@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 // assets imports
 import { logo } from '../src/assets';
 
-export default function Login({ isOpen, setIsOpen, openRegister }) {
+export default function Login({ isOpen, setIsOpen, openRegister, onLoginSuccess  }) {
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
 
@@ -31,7 +31,10 @@ export default function Login({ isOpen, setIsOpen, openRegister }) {
       } else {
         setData({});
         setUser(data);
+        localStorage.setItem('token', data.token);
         toast.success('Login Successful. Welcome Back!');
+        setIsOpen(false);
+        onLoginSuccess(); // Call the callback to update parent state
       }
     } catch (error) {
       console.log(error);

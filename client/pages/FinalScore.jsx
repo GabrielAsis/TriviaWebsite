@@ -21,7 +21,7 @@ const FinalScore = () => {
       try {
         await axios.post(
           "/update-points",
-          { points: score }, // Send the score to the backend
+          { points: score * 15 }, // Send the score to the backend
           { withCredentials: true } // Ensure cookies are sent for authentication
         );
         // Mark as updated to prevent duplicate calls
