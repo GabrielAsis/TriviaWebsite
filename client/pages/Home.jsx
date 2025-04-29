@@ -92,7 +92,7 @@ export default function Home() {
                 </div>
               </CardHeader>
               <CardFooter>
-                <Link to={mode.url}>
+                <Link to={mode.url} state={{ mode: mode.id }}>
                   <Button variant='ghost2'>Play Now <ArrowRight strokeWidth={2} /></Button>
                 </Link>
               </CardFooter>

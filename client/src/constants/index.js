@@ -26,26 +26,26 @@ import {
 export const modes = [
   // BLITZ MODE
   {
-    id: "0",
+    id: "blitz",
     title: "Blitz Mode",
     desc: "Race the clock, answer fast, and rack up points before time runs out!",
-    url: "/questions?mode=blitz",
+    url: "/settings",
     icon: blitzSvg,
   },
   // CUSTOM MODE
   {
-    id: "1",
+    id: "custom",
     title: "Custom Mode",
     desc: "Pick your category, set the difficulty, and build your perfect quiz!",
-    url: "/questions?mode=custom",
+    url: "/settings",
     icon: customSvg,
   },
   // ENDLESS MODE
   {
-    id: "2",
+    id: "endless",
     title: "Endless Mode",
     desc: "Answer endlessly, stay alive with 3 lives, and see how far you can go!",
-    url: "/questions?mode=endless",
+    url: "/settings",
     icon: endlessSvg,
   } 
 ]

@@ -40,6 +40,8 @@ function App() {
           <Route path="/questions" element={<Questions />} />
 
           <Route path="/score" element={<FinalScore />} />
+
+          <Route path="/blitz" element={<Blitz />} />
         </Routes>
       </Router>
     </ UserContextProvider>

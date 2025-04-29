@@ -1,11 +1,19 @@
 import SelectField from "../src/Components/SelectField";
 import TextFieldComp from "../src/Components/TextFieldComp";
 import useAxios from "../src/hooks/useAxios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Settings = () => {
-  const { response, error, loading } = useAxios({ url: "/api_category.php" });
+  const location = useLocation();
   const navigate = useNavigate();
+  const mode = location.state?.mode || "blitz";
+
+  const isBlitzMode = mode === "blitz";
+  const isEndlessMode = mode === "endless";
+  const isCustomMode = mode === "custom";
+
+
+  const { response, error, loading } = useAxios({ url: "/api_category.php" });
 
   if (loading) {
     return <div className="mt-20 text-center">Loading...</div>;
@@ -33,8 +41,16 @@ const Settings = () => {
   ];
 
   const handleSubmit = (e) => {
-    e.preventDefault(); 
-    navigate("/questions");
+    e.preventDefault();
+
+    // Navigate to the correct mode's game page
+    if (mode === "blitz") {
+      navigate("/blitz");
+    } else if (mode === "endless") {
+      navigate("/endless");
+    } else {
+      navigate("/questions");
+    }
   };
 
   return (

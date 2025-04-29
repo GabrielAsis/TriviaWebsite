@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { UserContext } from '../../context/userContext'; // Import UserContext
+
 
 // shadcn imports
 import {
@@ -25,6 +26,8 @@ const NavBar = () => {
   const [openLogin, setOpenLogin] = useState(false);
   const [openRegister, setOpenRegister] = useState(false);
 
+  const location = useLocation();
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -41,8 +44,10 @@ const NavBar = () => {
     };
   }, []);
 
+  const isColoredBgPage = location.pathname === "/settings";
+
   return (
-    <header className="bg-transparent fixed top-0 z-100 w-full py-2 px-4 sm:px-6 lg:px-8 xl:px-0" id="navbar">
+    <header className={`z-100 w-full py-2 px-4 sm:px-6 lg:px-8 xl:px-0 ${isColoredBgPage ? 'bg-primary border-accent border-b-2' : 'bg-transparent fixed top-0 '} transition-all duration-500`} id="navbar">
       <div className={`mx-auto max-w-7xl flex items-center justify-between transition-all duration-500 rounded-full ${scrolled ? 'py-3 px-6 bg-primary/60 backdrop-blur-sm border-primary ' : ' py-6'}`}>
         <div className="flex lg:flex-1">
           <Link to="/" className="flex flex-row justify-center items-center space-x-4 scale-100">
