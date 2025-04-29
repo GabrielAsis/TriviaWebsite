@@ -33,7 +33,7 @@ const Settings = () => {
   ];
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
     navigate("/questions");
   };
 

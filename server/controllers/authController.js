@@ -145,10 +145,16 @@ const updatePoints = async (req, res) => {
   }
 };
 
+const logoutUser = (req, res) => {
+  res.clearCookie('token'); // Clear the token cookie
+  res.json({ message: 'Logged out successfully' });
+};
+
 module.exports = {
   test,
   registerUser,
   loginUser,
   getProfile,
   updatePoints,
+  logoutUser,
 }

@@ -8,6 +8,8 @@ import Home from "../pages/Home";
 import Register from "../pages/Register";
 import Login from "../pages/Login";
 import { Dashboard } from '../pages/Dashboard';
+import Blitz from '../pages/Blitz';
+import Endless from '../pages/Endless';
 
 // import components
 import NavBar from "./Components/NavBar";

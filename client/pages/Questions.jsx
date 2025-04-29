@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { handleScoreChange } from "../redux/actions";
 import { decode } from "html-entities";
 import axios from "axios";
@@ -26,6 +26,16 @@ const getRandomInt = (max) =>
   Math.floor(Math.random() * Math.floor(max));
 
 const Questions = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const mode = queryParams.get("mode") || "normal"; // fallback
+
+  const isBlitz = mode === "blitz";
+  const isEndless = mode === "endless";
+  const isCustom = mode === "custom";
+
+  console.log("Current mode:", mode);
+
   // hide/show nav
   useEffect(() => {
     const navbar = document.getElementById("navbar");
@@ -57,8 +67,11 @@ const Questions = () => {
   const isAnswered = selectedAnswers.length > questionIndex;
   const [scoredQuestions, setScoredQuestions] = useState([]);
   const [answerResults, setAnswerResults] = useState([]);
+  
+  const [timer, setTimer] = useState(30); // 30 seconds for Blitz mode by default
+  const [isGameOver, setIsGameOver] = useState(false); // Track game over state
 
-
+  
   // fetch token + questions
   useEffect(() => {
     const fetchTokenAndQuestions = async () => {
@@ -95,7 +108,7 @@ const Questions = () => {
 
   // build and shuffle options when questionIndex or questions change
   useEffect(() => {
-    if (!questions.length) return;
+    if (!questions.length || !questions[questionIndex]) return;
   
     const q = questions[questionIndex];
     const answers = [...q.incorrect_answers];
@@ -103,7 +116,7 @@ const Questions = () => {
   
     setOptions(answers);
   }, [questions, questionIndex]);
-
+  
   // stores selected radio button value
   const handleValueChange = (value) => {
     const updatedAnswers = [...selectedAnswers];
@@ -148,12 +161,15 @@ const Questions = () => {
 
   if (loading)
     return (
-      <div className="mt-20 text-center">Loading Questions…</div>
+      <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center">
+        <div className="w-18 h-18 border-8 border-t-8 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+        <h3 className="ml-2">Loading Questions...</h3>
+      </div>
     );
   if (!questions.length)
     return (
-      <div className="mt-20 text-center text-red-500">
-        No questions available.
+      <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center text-red-500">
+        <h3>There seems to be a problem, please try again later. 😥</h3>
       </div>
     );
 
@@ -186,7 +202,7 @@ const Questions = () => {
         </div>
 
         <div className="text-off-white">
-          <h4 className="font-bold">Blitz Mode</h4>
+          <h4 className="font-bold">N Mode</h4>
         </div>
       
       </div>
@@ -270,7 +286,7 @@ const Questions = () => {
         {/* SCORE */}
         {/* <div className="mt-6 text-sm text-gray-600">
           Score: {score} / {questions.length}
-        </div> */}
+        </div> */}  
       </div>
 
     </div>

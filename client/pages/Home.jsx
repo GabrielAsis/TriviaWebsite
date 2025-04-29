@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { Link } from 'react-router-dom'
 
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -91,7 +92,9 @@ export default function Home() {
                 </div>
               </CardHeader>
               <CardFooter>
-                <Button variant='ghost2'>Play Now <ArrowRight strokeWidth={2} /></Button>
+                <Link to={mode.url}>
+                  <Button variant='ghost2'>Play Now <ArrowRight strokeWidth={2} /></Button>
+                </Link>
               </CardFooter>
             </Card>
           ))}

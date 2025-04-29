@@ -31,10 +31,15 @@ export const Dashboard = () => {
   // Use refreshed user data if available, fall back to context user
   const displayUser = refreshedUser || user;
 
-  const handleLogout = () => {
-    localStorage.removeItem('token'); // Remove the token from localStorage
-    setUser(null); // Clear user context
-    window.location.href = '/'; // Redirect to home or another page after logout
+  const handleLogout = async () => {
+    try {
+      await axios.post('/logout', {}, { withCredentials: true }); // Call the logout endpoint
+      localStorage.removeItem('token'); // Remove the token from localStorage
+      setUser(null); // Clear user context
+      window.location.href = '/'; // Redirect to home or another page after logout
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   if (loading) return <div>Loading...</div>;
