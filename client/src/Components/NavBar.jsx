@@ -1,7 +1,11 @@
 import { useState, useEffect, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { UserContext } from '../../context/userContext'; // Import UserContext
+import { UserContext } from '../../context/userContext';
 
+// Firebase imports
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "./firebase";
+import { getDoc, doc } from "firebase/firestore";
 
 // shadcn imports
 import {
@@ -17,17 +21,56 @@ import { Menu } from 'lucide-react';
 import Login from '../../pages/Login';
 import Register from '../../pages/Register';
 
-
 const NavBar = () => {
-  const { user } = useContext(UserContext); // Access user from UserContext
+  const { user, setUser } = useContext(UserContext);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
   const [openLogin, setOpenLogin] = useState(false);
   const [openRegister, setOpenRegister] = useState(false);
-
+  
   const location = useLocation();
 
+  // Listen for Firebase auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          // User is signed in, get their data from Firestore
+          const userDocRef = doc(db, "Users", firebaseUser.uid);
+          const userSnap = await getDoc(userDocRef);
+          
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            // Set user in context with combined data
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              name: userData.name,
+              // Add any other user data from Firestore here
+            });
+          } else {
+            console.log("No user data found in Firestore");
+            // User exists in Auth but not in Firestore
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              name: firebaseUser.email.split('@')[0], // Fallback name from email
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      } else {
+        // User is signed out
+        setUser(null);
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [setUser]);
+
+  // Handle scroll effects (keeping your original code)
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -47,6 +90,7 @@ const NavBar = () => {
   const isColoredBgPage = location.pathname === "/settings";
 
   return (
+    
     <header className={`z-100 w-full py-2 px-4 sm:px-6 lg:px-8 xl:px-0 ${isColoredBgPage ? 'bg-primary border-accent border-b-2' : 'bg-transparent fixed top-0 '} transition-all duration-500`} id="navbar">
       <div className={`mx-auto max-w-7xl flex items-center justify-between transition-all duration-500 rounded-full ${scrolled ? 'py-3 px-6 bg-primary/60 backdrop-blur-sm border-primary ' : ' py-6'}`}>
         <div className="flex lg:flex-1">
@@ -70,16 +114,16 @@ const NavBar = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[250px]">
               <div className="space-y-4 m-8 text-off-white">
-                <Link to="/categories" className="block">Categories</Link>
-                <Link to="/leaderboards" className="block">Leaderboards</Link>
-                <Link to="/modes" className="block">Modes</Link>
+                <Link to="/categories" onClick={() => setOpen(false)} className="block">Categories</Link>
+                <Link to="/leaderboards" onClick={() => setOpen(false)} className="block">Leaderboards</Link>
+                <Link to="/modes" onClick={() => setOpen(false)} className="block">Modes</Link>
 
                 <div className="flex flex-col space-y-4 w-fit">
                   {user ? (
-                    <Link to="/dashboard">
+                    <Link to="/dashboard" onClick={() => setOpen(false)}>
                     <Avatar>
                       <AvatarImage src='' />
-                      <AvatarFallback>
+                      <AvatarFallback className="font-bold">
                         {user.name
                         ? user.name
                             .match(/[A-Z]/g) // Extract uppercase letters (e.g., "GabrielAsis" → "GA")
