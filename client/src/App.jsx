@@ -17,11 +17,22 @@ import NavBar from "./Components/NavBar";
 import axios from 'axios';
 import { Toaster } from 'react-hot-toast';
 import { UserContextProvider } from '../context/userContext';
+import { useEffect, useState } from 'react';
 
 axios.defaults.baseURL = 'http://localhost:8000';
 axios.defaults.withCredentials = true;
 
+import { auth } from "./Components/firebase"
+
 function App() {
+  const [user, setUser]=useState();
+  useEffect(() => {
+    auth.onAuthStateChanged(user=> {
+      setUser(user);
+    })
+  },[])
+  
+
   return (
     <UserContextProvider>
       <Router>

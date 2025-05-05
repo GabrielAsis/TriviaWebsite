@@ -1,48 +1,97 @@
 import { useState, useContext } from 'react';
-import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/userContext';
 
 // shadcn imports
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 // assets imports
 import { logo } from '../src/assets';
 
-export default function Login({ isOpen, setIsOpen, openRegister, onLoginSuccess  }) {
+// Firebase imports
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../src/Components/firebase";
+import { getDoc, doc } from "firebase/firestore";
+
+export default function Login({ isOpen, setIsOpen, openRegister, onLoginSuccess }) {
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
 
-  const [data, setData] = useState({
-    email: '',
-    password: ''
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const loginUser = async (e) => {
     e.preventDefault();
-    const { email, password } = data;
+    setError("");
+    setLoading(true);
+    
     try {
-      const { data } = await axios.post('/login', { email, password });
-      if (data.error) {
-        toast.error(data.error);
-      } else {
-        setData({});
-        setUser(data);
-        localStorage.setItem('token', data.token);
+      // Sign in the user with Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Get additional user data from Firestore
+      const userDoc = await getDoc(doc(db, "Users", user.uid));
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        
+        // Create a user object with data from auth and Firestore
+        const userInfo = {
+          uid: user.uid,
+          email: user.email,
+          name: userData.name,
+          points: userData.points || 0, // Include points in the user context
+          // Add any other fields you need from Firestore
+        };
+        
+        // Update context with user data
+        setUser(userInfo);
+        
+        // Store auth token in localStorage if needed
+        // Note: Firebase handles tokens automatically, but you can store UID or custom token
+        localStorage.setItem('token', user.uid);
+        
+        console.log("User logged in successfully");
         toast.success('Login Successful. Welcome Back!');
         setIsOpen(false);
-        onLoginSuccess(); // Call the callback to update parent state
+        
+        if (onLoginSuccess) {
+          onLoginSuccess(); // Call the callback to update parent state
+        }
+      } else {
+        // This case handles if the user exists in Authentication but not in Firestore
+        console.error("User document doesn't exist in Firestore");
+        setError("User profile not found. Please contact support.");
+        toast.error("User profile not found");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Login error:", error.message);
+      let errorMessage = "Failed to login. Please check your credentials.";
+      
+      // Handle specific Firebase auth errors with more user-friendly messages
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        errorMessage = "Invalid email or password";
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = "Too many failed login attempts. Please try again later.";
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = "Network error. Please check your connection.";
+      }
+      
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Dialog  open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="whiteOutline">
           Log In
@@ -67,9 +116,10 @@ export default function Login({ isOpen, setIsOpen, openRegister, onLoginSuccess 
                 <label className="block text-sm font-medium text-gray">Email</label>
                 <Input
                   type="email"
-                  value={data.email}
+                  value={email}
                   placeholder="Enter your email"
-                  onChange={(e) => setData({ ...data, email: e.target.value })}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
 
@@ -78,18 +128,27 @@ export default function Login({ isOpen, setIsOpen, openRegister, onLoginSuccess 
                 <label className="block text-sm font-medium text-gray">Password</label>
                 <Input
                   type="password"
-                  value={data.password}
+                  value={password}
                   placeholder="Enter your password"
-                  onChange={(e) => setData({ ...data, password: e.target.value })}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
               </div>
             </div>
 
+            {/* ERROR MESSAGE */}
+            {error && (
+              <div className="text-red-500 text-sm">
+                {error}
+              </div>
+            )}
+
             {/* SUBMIT BUTTON */}
             <Button
               type="submit"
+              disabled={loading}
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </Button>
 
             <div>

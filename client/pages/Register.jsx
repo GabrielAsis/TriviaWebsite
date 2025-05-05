@@ -1,39 +1,81 @@
 import { useState } from 'react';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast'
 
 // shadcn imports
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 // assets imports
 import { logo } from '../src/assets';
 
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../src/Components/firebase";
+import { setDoc, doc } from "firebase/firestore";
+
 export default function Register({ isOpen, setIsOpen, openLogin }) {
   const navigate = useNavigate();
-  const [data, setData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
 
-  const registerUser = async (e) => {
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleRegister = async (e) => {
     e.preventDefault();
-    const { name, email, password } = data;
+    setError("");
+    setLoading(true);
+    
     try {
-      const { data } = await axios.post('/register', { name, email, password });
-      if (data.error) {
-        toast.error(data.error);
-      } else {
-        setData({});
-        toast.success('Registration Successful. Welcome!');
-        setIsOpen(false);
-        openLogin();
-      }
+      // Create the user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Now we have the authenticated user with a valid UID
+      console.log("User authenticated:", user.uid);
+      
+      // Store additional user data in Firestore with points initialized to 0
+      await setDoc(doc(db, "Users", user.uid), {
+        email: email, // Use the email from state, not user.email (to ensure consistency)
+        name: username,
+        points: 0  // Initialize points to 0 for new users
+      });
+      
+      console.log("User registered successfully");
+      
+      // Close the register dialog and show success message
+      setIsOpen(false);
+      toast.success('Account registered successfully! Please login to continue.');
+      
+      // Wait a brief moment before opening the login dialog
+      // This gives time for the register dialog to close first
+      setTimeout(() => {
+        openLogin(); // Open the login dialog
+      }, 300);
+      
     } catch (error) {
-      console.log(error);
+      console.error("Registration error:", error.message, error.code);
+      
+      // Provide more user-friendly error messages
+      let errorMessage = "Failed to create account. Please try again.";
+      
+      // Handle specific Firebase auth errors with more professional messages
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = "This email address is already in use.";
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = "Please provide a valid email address.";
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = "Please use a stronger password with at least 6 characters.";
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = "Please check your internet connection and try again.";
+      }
+      
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,8 +86,8 @@ export default function Register({ isOpen, setIsOpen, openLogin }) {
           Sign Up
         </Button>
       </DialogTrigger>
-      <DialogContent className="spacey-y-8">
-        <form onSubmit={registerUser}>
+      <DialogContent className="space-y-6">
+        <form onSubmit={handleRegister}>
           <div className="grid grid-cols-1 gap-6">
             {/* HEADER & DESC */}
             <div className='space-y-2'>
@@ -63,11 +105,11 @@ export default function Register({ isOpen, setIsOpen, openLogin }) {
                 <label className="block text-sm font-medium text-gray-900">Name</label>
                 <Input 
                   type="text"
-                  value={data.name}
+                  value={username}
                   placeholder="Enter your name"
-                  onChange={(e) => setData({ ...data, name: e.target.value })}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
                 />
-                
               </div>
 
               {/* EMAIL INPUT */}
@@ -75,9 +117,10 @@ export default function Register({ isOpen, setIsOpen, openLogin }) {
                 <label className="block text-sm font-medium text-gray-900">Email</label>
                 <Input 
                   type="email"
-                  value={data.email}
+                  value={email}
                   placeholder="Enter your email"
-                  onChange={(e) => setData({ ...data, email: e.target.value })}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
 
@@ -86,9 +129,10 @@ export default function Register({ isOpen, setIsOpen, openLogin }) {
                 <label className="block text-sm font-medium text-gray-900">Password</label>
                 <Input 
                   type="password"
-                  value={data.password}
+                  value={password}
                   placeholder="Enter your password"
-                  onChange={(e) => setData({ ...data, password: e.target.value })}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -96,8 +140,9 @@ export default function Register({ isOpen, setIsOpen, openLogin }) {
             {/* SUBMIT BUTTON */}
             <Button
               type="submit"
+              disabled={loading}
             >
-              Sign Up
+              {loading ? "Signing Up..." : "Sign Up"}
             </Button>
 
             <div>
