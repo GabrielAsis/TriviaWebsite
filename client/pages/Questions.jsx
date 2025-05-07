@@ -17,13 +17,17 @@ import { Button } from "@/components/ui/button";
 // assets imports
 import { thinkingAvatar, endlessPng, blitzPng } from "../src/assets";
 
-
 // icons
 import { ArrowLeft, ArrowRight } from "lucide-react";  
 
 // number randomizer
 const getRandomInt = (max) =>
   Math.floor(Math.random() * Math.floor(max));
+
+// Persistent token storage
+const TOKEN_STORAGE_KEY = "trivia_token";
+const TOKEN_TIMESTAMP_KEY = "trivia_token_timestamp";
+const TOKEN_EXPIRY_DAYS = 6; // Tokens expire in 6 hours, we'll refresh after 6 days to be safe
 
 const Questions = () => {
   const location = useLocation();
@@ -33,8 +37,6 @@ const Questions = () => {
   const isBlitz = mode === "blitz";
   const isEndless = mode === "endless";
   const isCustom = mode === "custom";
-
-  console.log("Current mode:", mode);
 
   // hide/show nav
   useEffect(() => {
@@ -60,6 +62,7 @@ const Questions = () => {
   const [questions, setQuestions] = useState([]);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [options, setOptions] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
@@ -71,29 +74,91 @@ const Questions = () => {
   const [timer, setTimer] = useState(30); // 30 seconds for Blitz mode by default
   const [isGameOver, setIsGameOver] = useState(false); // Track game over state
 
+  // Helper function to check if stored token is valid
+  const isTokenValid = () => {
+    const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    const tokenTimestamp = localStorage.getItem(TOKEN_TIMESTAMP_KEY);
+    
+    if (!storedToken || !tokenTimestamp) return false;
+    
+    // Check if token is older than TOKEN_EXPIRY_DAYS
+    const now = new Date().getTime();
+    const tokenAge = now - parseInt(tokenTimestamp);
+    const tokenAgeInDays = tokenAge / (1000 * 60 * 60 * 24);
+    
+    return tokenAgeInDays < TOKEN_EXPIRY_DAYS;
+  };
   
   // fetch token + questions
   useEffect(() => {
     const fetchTokenAndQuestions = async () => {
       try {
-        const { data: tokenRes } = await axios.get(
-          "https://opentdb.com/api_token.php?command=request",
-          { withCredentials: false }
-        );
-        setToken(tokenRes.token);
+        setError(null);
+        let sessionToken;
+        
+        // Check if we have a valid stored token
+        if (isTokenValid()) {
+          sessionToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+          setToken(sessionToken);
+        } else {
+          // Get a new token if needed
+          try {
+            const { data: tokenRes } = await axios.get(
+              "https://opentdb.com/api_token.php?command=request",
+              { withCredentials: false }
+            );
+            
+            sessionToken = tokenRes.token;
+            setToken(sessionToken);
+            
+            // Store the new token
+            localStorage.setItem(TOKEN_STORAGE_KEY, sessionToken);
+            localStorage.setItem(TOKEN_TIMESTAMP_KEY, new Date().getTime().toString());
+          } catch (tokenErr) {
+            // Continue without token if token fetch fails - but don't set error state
+            sessionToken = null;
+          }
+        }
 
-        let apiUrl = `https://opentdb.com/api.php?amount=${amount_of_question}&token=${tokenRes.token}`;
+        // Fetch questions with or without token
+        let apiUrl = `https://opentdb.com/api.php?amount=${amount_of_question}`;
+        if (sessionToken) apiUrl += `&token=${sessionToken}`;
         if (question_category) apiUrl += `&category=${question_category}`;
         if (question_difficulty) apiUrl += `&difficulty=${question_difficulty}`;
         if (question_type) apiUrl += `&type=${question_type}`;
 
-        const { data: questionRes } = await axios.get(apiUrl, {
-          withCredentials: false,
-        });
-        setQuestions(questionRes.results);
+        try {
+          const { data: questionRes } = await axios.get(apiUrl, { 
+            withCredentials: false 
+          });
+          
+          // Check if we have valid questions regardless of response code
+          if (questionRes.results && questionRes.results.length > 0) {
+            // If we have questions, use them regardless of response code
+            setQuestions(questionRes.results);
+            
+            // If token is empty, reset it for next time (but don't retry now)
+            if (questionRes.response_code === 4) {
+              localStorage.removeItem(TOKEN_STORAGE_KEY);
+              localStorage.removeItem(TOKEN_TIMESTAMP_KEY);
+            }
+          } else {
+            // Only set error if we truly have no questions
+            setError("No questions found. Please try different settings.");
+          }
+        } catch (questionsErr) {
+          // Only set error state if we couldn't get any questions
+          if (!questions.length) {
+            setError("Failed to load questions. Please try again later.");
+          }
+        }
       } catch (err) {
-        console.error("Failed to fetch token or questions", err);
+        // Only set error if we truly couldn't get questions
+        if (!questions.length) {
+          setError("Failed to load questions. Please try again later.");
+        }
       } finally {
+        // Always set loading to false
         setLoading(false);
       }
     };
@@ -166,10 +231,20 @@ const Questions = () => {
         <h3 className="ml-2">Loading Questions...</h3>
       </div>
     );
+    
+  if (error && !questions.length)
+    return (
+      <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center text-red-500">
+        <h3>{error}</h3>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    );
+    
   if (!questions.length)
     return (
       <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center text-red-500">
         <h3>There seems to be a problem, please try again later. 😥</h3>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
       </div>
     );
 
@@ -202,7 +277,7 @@ const Questions = () => {
         </div>
 
         <div className="text-off-white">
-          <h4 className="font-bold">N Mode</h4>
+          <h4 className="font-bold">{mode.charAt(0).toUpperCase() + mode.slice(1)} Mode</h4>
         </div>
       
       </div>

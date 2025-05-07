@@ -68,7 +68,7 @@ const Blitz = () => {
   const [scoredQuestions, setScoredQuestions] = useState([]);
   const [answerResults, setAnswerResults] = useState([]);
   
-  const [timer, setTimer] = useState(5); 
+  const [timer, setTimer] = useState(10); 
   const [isGameOver, setIsGameOver] = useState(false);
 
   

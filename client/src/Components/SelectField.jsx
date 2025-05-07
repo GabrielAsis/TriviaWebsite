@@ -1,23 +1,43 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { handleCategoryChange, handleDifficultyChange, handleTypeChange } from "../../redux/actions";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  handleCategoryChange,
+  handleDifficultyChange,
+  handleTypeChange,
+} from "../../redux/actions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
-const SelectField = (props) => {
-  const { label, options } = props;
+const SelectField = ({ label, options }) => {
   const dispatch = useDispatch();
-  const [value, setValue] = useState("");
 
-  const handleChange = (e) => {
-    setValue(e.target.value);
+  // Get current selected values from Redux
+  const category = useSelector((state) => state.category);
+  const difficulty = useSelector((state) => state.difficulty);
+  const questionType = useSelector((state) => state.type);
+
+  // Determine value based on label
+  let value = "";
+  if (label === "Category") value = category;
+  else if (label === "Difficulty") value = difficulty;
+  else if (label === "Type") value = questionType;
+
+  const handleChange = (value) => {
     switch (label) {
       case "Category":
-        dispatch(handleCategoryChange(e.target.value));
+        dispatch(handleCategoryChange(value));
         break;
       case "Difficulty":
-        dispatch(handleDifficultyChange(e.target.value));
+        dispatch(handleDifficultyChange(value));
         break;
       case "Type":
-        dispatch(handleTypeChange(e.target.value));
+        dispatch(handleTypeChange(value));
         break;
       default:
         return;
@@ -25,19 +45,20 @@ const SelectField = (props) => {
   };
 
   return (
-    <div className="mt-5">
-      <label className="block text-left mb-2 font-medium">{label}</label>
-      <select
-        value={value}
-        onChange={handleChange}
-        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        {options.map(({ id, name }) => (
-          <option value={id} key={id}>
-            {name}
-          </option>
-        ))}
-      </select>
+    <div className="mt-5 space-y-2 w-full">
+      <Label>{label}</Label>
+      <Select onValueChange={handleChange} value={value}>
+        <SelectTrigger>
+          <SelectValue placeholder={`Select ${label}`} />
+        </SelectTrigger>
+        <SelectContent>
+          {options && options.map(({ id, name }) => (
+            <SelectItem key={id} value={String(id)}>
+              {name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };

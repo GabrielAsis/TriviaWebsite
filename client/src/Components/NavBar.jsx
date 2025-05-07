@@ -91,8 +91,8 @@ const NavBar = () => {
 
   return (
     
-    <header className={`z-100 w-full py-2 px-4 sm:px-6 lg:px-8 xl:px-0 ${isColoredBgPage ? 'bg-primary border-accent border-b-2' : 'bg-transparent fixed top-0 '} transition-all duration-500`} id="navbar">
-      <div className={`mx-auto max-w-7xl flex items-center justify-between transition-all duration-500 rounded-full ${scrolled ? 'py-3 px-6 bg-primary/60 backdrop-blur-sm border-primary ' : ' py-6'}`}>
+    <header className={`z-100 w-full sm:px-6 lg:px-8 xl:px-0 ${isColoredBgPage ? 'bg-primary fixed top-0 py-0 px-4' : 'bg-transparent fixed top-0  py-2 px-4 '} transition-all duration-500`}  id="navbar">
+      <div className={`mx-auto max-w-7xl flex items-center justify-between transition-all duration-500 rounded-full ${scrolled ? 'py-3 px-6 bg-primary backdrop-blur-sm border-primary ' : ' py-6'}`}>
         <div className="flex lg:flex-1">
           <Link to="/" className="flex flex-row justify-center items-center space-x-4 scale-100">
             <img

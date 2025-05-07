@@ -29,7 +29,7 @@ export const modes = [
     id: "blitz",
     title: "Blitz Mode",
     desc: "Race the clock, answer fast, and rack up points before time runs out!",
-    url: "/settings",
+    url: "/settings?mode=blitz",
     icon: blitzSvg,
   },
   // CUSTOM MODE
@@ -37,7 +37,7 @@ export const modes = [
     id: "custom",
     title: "Custom Mode",
     desc: "Pick your category, set the difficulty, and build your perfect quiz!",
-    url: "/settings",
+    url: "/settings?mode=custom",
     icon: customSvg,
   },
   // ENDLESS MODE
@@ -45,7 +45,7 @@ export const modes = [
     id: "endless",
     title: "Endless Mode",
     desc: "Answer endlessly, stay alive with 3 lives, and see how far you can go!",
-    url: "/settings",
+    url: "/settings?mode=endless",
     icon: endlessSvg,
   } 
 ]

@@ -63,11 +63,9 @@ export const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="container py-20 flex justify-center items-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4">Loading your profile...</p>
-        </div>
+      <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center">
+        <div className="w-18 h-18 border-8 border-t-8 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+        <h3 className="ml-2">Loading your profile...</h3>
       </div>
     );
   }
