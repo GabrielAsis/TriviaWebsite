@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { thinkingAvatar, endlessPng, blitzPng } from "../src/assets";
 
 // icons
-import { ArrowLeft, ArrowRight } from "lucide-react";  
+import { ArrowLeft, ArrowRight, Heart, HeartCrack, HeartOff } from "lucide-react";  
 
 // number randomizer
 const getRandomInt = (max) =>
@@ -49,7 +49,7 @@ const Questions = () => {
 
   // Store options for each question separately
   const [allOptions, setAllOptions] = useState([]);
-  
+
   // USE STATES
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +67,9 @@ const Questions = () => {
 
   // Use a ref to track if we should stop retrying
   const shouldStopRetrying = useRef(false);
-  
+
+  const [lives, setLives] = useState(isEndless ? 3 : isStrike ? 1 : null);
+
   // Define handleFinish near the top to avoid reference issues
   const handleFinish = useCallback(() => {
     // Make sure questions have loaded and we have a valid questionIndex
@@ -169,30 +171,21 @@ const Questions = () => {
   // build and shuffle options when questionIndex or questions change
   useEffect(() => {
     if (!questions.length || !questions[questionIndex]) return;
-  
-    // Only generate options if we don't already have them for this question
+
     if (!allOptions[questionIndex]) {
       const q = questions[questionIndex];
       const answers = [...q.incorrect_answers];
       answers.splice(getRandomInt(answers.length + 1), 0, q.correct_answer);
-      
-      // Store options for this specific question
+
       const newAllOptions = [...allOptions];
       newAllOptions[questionIndex] = answers;
       setAllOptions(newAllOptions);
-      
-      // Update current options
+
       setOptions(answers);
     } else {
-      // Use already generated options for this question
       setOptions(allOptions[questionIndex]);
     }
-    
-    // Mark timer as started once questions are loaded (in blitz mode)
-    if (isBlitz && !timerStarted) {
-      setTimerStarted(true);
-    }
-  }, [questions, questionIndex, isBlitz, allOptions, timerStarted]);
+  }, [questions, questionIndex, allOptions]);
   
   // Timer effect - only runs in blitz mode
   useEffect(() => {
@@ -219,10 +212,10 @@ const Questions = () => {
   };
 
   // submits answer & moves to next question
-  const handleNext = () => {
+  const handleNext = async () => {
     const correct = decode(questions[questionIndex].correct_answer);
     const selected = selectedAnswers[questionIndex];
-  
+
     // Only score if not already scored
     if (!scoredQuestions.includes(questionIndex)) {
       const isCorrect = selected === correct;
@@ -231,23 +224,66 @@ const Questions = () => {
         updated[questionIndex] = isCorrect;
         return updated;
       });
-  
+
       if (isCorrect) {
         dispatch(handleScoreChange(score + 1));
+      } else if (isEndless || isStrike) {
+        // Deduct a life if the answer is wrong in endless or strike mode
+        setLives((prevLives) => {
+          const newLives = prevLives - 1;
+          if (newLives <= 0) {
+            // Trigger finish if no lives are left
+            handleFinish();
+          }
+          return newLives;
+        });
       }
-  
+
       setScoredQuestions([...scoredQuestions, questionIndex]);
     }
-  
-    // Navigate forward
-    if (questionIndex + 1 < questions.length) {
+
+    // Check if in endless mode
+    if (isEndless) {
+      if (questionIndex + 1 === questions.length) {
+        // Fetch more questions and append them
+        const newQuestions = await fetchMoreQuestions();
+        setQuestions((prev) => [...prev, ...newQuestions]);
+      }
       setQuestionIndex((idx) => idx + 1);
-      
-      // No longer reset timer for each question
+    } else if (isStrike) {
+      // Advance to the next question in strike mode if the answer is correct
+      if (selected === correct && questionIndex + 1 < questions.length) {
+        setQuestionIndex((idx) => idx + 1);
+      } else if (selected === correct && questionIndex + 1 === questions.length) {
+        // If it's the last question, finish the quiz
+        handleFinish();
+      }
     } else {
-      // Navigate to score with a state indicator that we came from questions
-      navigate("/score", { state: { fromQuestions: true } });
+      // Navigate forward for normal or blitz mode
+      if (questionIndex + 1 < questions.length) {
+        setQuestionIndex((idx) => idx + 1);
+      } else {
+        // Navigate to score with a state indicator that we came from questions
+        navigate("/score", { state: { fromQuestions: true } });
+      }
     }
+  };
+
+  const fetchMoreQuestions = async () => {
+    try {
+      let apiUrl = `https://opentdb.com/api.php?amount=10`; // Fetch 10 more questions
+      if (question_category) apiUrl += `&category=${question_category}`;
+      if (question_difficulty) apiUrl += `&difficulty=${question_difficulty}`;
+      if (question_type) apiUrl += `&type=${question_type}`;
+
+      const response = await axios.get(apiUrl);
+      if (response.data.results && response.data.results.length > 0) {
+        return response.data.results;
+      }
+    } catch (err) {
+      console.error("Failed to fetch more questions:", err);
+    }
+    return [];
   };
 
   const handlePrev = () => {
@@ -304,7 +340,19 @@ const Questions = () => {
                 ⏱ {timer}
               </div>
             )}
-            Question {questionIndex + 1}/{questions.length}
+            {/* LIVES */}
+            {isEndless && (
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  index < lives ? (
+                    <Heart key={index} className="text-red-500 w-6 h-6" />
+                  ) : (
+                    <HeartOff key={index} className="text-gray-400 w-6 h-6" />
+                  )
+                ))}
+              </div>
+            )}
+            Question {questionIndex + 1}/{isEndless ? "∞" : questions.length}
           </h3>
 
           {/* QUESTION */}
@@ -393,7 +441,7 @@ const Questions = () => {
             onClick={handleNext}
             disabled={!selectedOption}
           >
-           {questionIndex + 1 === questions.length ? "Finish" : "Next"} <ArrowRight strokeWidth={2}/>
+            {isEndless ? "Next" : questionIndex + 1 === questions.length ? "Finish" : "Next"} <ArrowRight strokeWidth={2}/>
           </Button>
         </div>
       </div>
