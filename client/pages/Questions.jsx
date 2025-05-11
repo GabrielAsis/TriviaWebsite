@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { handleScoreChange } from "../redux/actions";
 import { decode } from "html-entities";
@@ -24,20 +24,80 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 const getRandomInt = (max) =>
   Math.floor(Math.random() * Math.floor(max));
 
-// Persistent token storage
-const TOKEN_STORAGE_KEY = "trivia_token";
-const TOKEN_TIMESTAMP_KEY = "trivia_token_timestamp";
-const TOKEN_EXPIRY_DAYS = 6; // Tokens expire in 6 hours, we'll refresh after 6 days to be safe
-
 const Questions = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const mode = queryParams.get("mode") || "normal"; // fallback
+  
+  // Get timer from URL if in blitz mode
+  const timerParam = queryParams.get("timer");
+  const defaultTimer = timerParam ? parseInt(timerParam) : 60;
 
   const isBlitz = mode === "blitz";
   const isEndless = mode === "endless";
-  const isCustom = mode === "custom";
+  const isStrike = mode === "strike";
 
+  // FIX: Use specific selectors instead of selecting the entire state
+  const question_category = useSelector((state) => state.question_category);
+  const question_difficulty = useSelector((state) => state.question_difficulty);
+  const question_type = useSelector((state) => state.question_type);
+  const amount_of_question = useSelector((state) => state.amount_of_question);
+  const score = useSelector((state) => state.score);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // Store options for each question separately
+  const [allOptions, setAllOptions] = useState([]);
+  
+  // USE STATES
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [options, setOptions] = useState([]);
+  const [selectedAnswers, setSelectedAnswers] = useState([]);
+  const [scoredQuestions, setScoredQuestions] = useState([]);
+  const [answerResults, setAnswerResults] = useState([]);
+  
+  // Timer states - use default from URL parameter or 60 seconds
+  const [timer, setTimer] = useState(isBlitz ? defaultTimer : 0);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [timerStarted, setTimerStarted] = useState(false);
+
+  // Use a ref to track if we should stop retrying
+  const shouldStopRetrying = useRef(false);
+  
+  // Define handleFinish near the top to avoid reference issues
+  const handleFinish = useCallback(() => {
+    // Make sure questions have loaded and we have a valid questionIndex
+    if (!questions.length || !questions[questionIndex]) return;
+    
+    const correct = decode(questions[questionIndex].correct_answer);
+    const selected = selectedAnswers[questionIndex];
+  
+    // Only score if not already scored
+    if (!scoredQuestions.includes(questionIndex)) {
+      const isCorrect = selected === correct;
+      setAnswerResults((prev) => {
+        const updated = [...prev];
+        updated[questionIndex] = isCorrect;
+        return updated;
+      });
+  
+      if (isCorrect) {
+        dispatch(handleScoreChange(score + 1));
+      }
+  
+      setScoredQuestions([...scoredQuestions, questionIndex]);
+    }
+  
+    navigate("/score", { state: { fromQuestions: true } });
+  }, [questions, questionIndex, selectedAnswers, scoredQuestions, dispatch, score, navigate]);
+  
+  // Get the selected option for the current question
+  const selectedOption = selectedAnswers[questionIndex] || "";
+  
   // hide/show nav
   useEffect(() => {
     const navbar = document.getElementById("navbar");
@@ -46,141 +106,110 @@ const Questions = () => {
       if (navbar) navbar.style.display = "block";
     };
   }, []);
-
-  const {
-    question_category,
-    question_difficulty,
-    question_type,
-    amount_of_question,
-    score,
-  } = useSelector((state) => state);
-
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  // USE STATES
-  const [questions, setQuestions] = useState([]);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [options, setOptions] = useState([]);
-  const [selectedAnswers, setSelectedAnswers] = useState([]);
-  const selectedOption = selectedAnswers[questionIndex] || "";
-  const isAnswered = selectedAnswers.length > questionIndex;
-  const [scoredQuestions, setScoredQuestions] = useState([]);
-  const [answerResults, setAnswerResults] = useState([]);
   
-  const [timer, setTimer] = useState(30); // 30 seconds for Blitz mode by default
-  const [isGameOver, setIsGameOver] = useState(false); // Track game over state
-
-  // Helper function to check if stored token is valid
-  const isTokenValid = () => {
-    const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
-    const tokenTimestamp = localStorage.getItem(TOKEN_TIMESTAMP_KEY);
+  // Brute force fetch with retries regardless of errors - EXACT from SimpleQuestions
+  const fetchQuestionsWithRetry = useCallback(async (maxRetries = 10) => {
+    let attempt = 0;
+    let success = false;
     
-    if (!storedToken || !tokenTimestamp) return false;
+    // Reset the stop flag when starting a new fetch
+    shouldStopRetrying.current = false;
     
-    // Check if token is older than TOKEN_EXPIRY_DAYS
-    const now = new Date().getTime();
-    const tokenAge = now - parseInt(tokenTimestamp);
-    const tokenAgeInDays = tokenAge / (1000 * 60 * 60 * 24);
-    
-    return tokenAgeInDays < TOKEN_EXPIRY_DAYS;
-  };
-  
-  // fetch token + questions
-  useEffect(() => {
-    const fetchTokenAndQuestions = async () => {
+    while (!success && attempt < maxRetries && !shouldStopRetrying.current) {
       try {
-        setError(null);
-        let sessionToken;
+        attempt++;
+        setRetryCount(attempt);
         
-        // Check if we have a valid stored token
-        if (isTokenValid()) {
-          sessionToken = localStorage.getItem(TOKEN_STORAGE_KEY);
-          setToken(sessionToken);
-        } else {
-          // Get a new token if needed
-          try {
-            const { data: tokenRes } = await axios.get(
-              "https://opentdb.com/api_token.php?command=request",
-              { withCredentials: false }
-            );
-            
-            sessionToken = tokenRes.token;
-            setToken(sessionToken);
-            
-            // Store the new token
-            localStorage.setItem(TOKEN_STORAGE_KEY, sessionToken);
-            localStorage.setItem(TOKEN_TIMESTAMP_KEY, new Date().getTime().toString());
-          } catch (tokenErr) {
-            // Continue without token if token fetch fails - but don't set error state
-            sessionToken = null;
-          }
-        }
-
-        // Fetch questions with or without token
+        // Build API URL with Redux state
         let apiUrl = `https://opentdb.com/api.php?amount=${amount_of_question}`;
-        if (sessionToken) apiUrl += `&token=${sessionToken}`;
         if (question_category) apiUrl += `&category=${question_category}`;
         if (question_difficulty) apiUrl += `&difficulty=${question_difficulty}`;
         if (question_type) apiUrl += `&type=${question_type}`;
-
-        try {
-          const { data: questionRes } = await axios.get(apiUrl, { 
-            withCredentials: false 
-          });
+        
+        const response = await axios.get(apiUrl);
+        
+        if (response.data.results && response.data.results.length > 0) {
+          setQuestions(response.data.results);
+          success = true;
           
-          // Check if we have valid questions regardless of response code
-          if (questionRes.results && questionRes.results.length > 0) {
-            // If we have questions, use them regardless of response code
-            setQuestions(questionRes.results);
-            
-            // If token is empty, reset it for next time (but don't retry now)
-            if (questionRes.response_code === 4) {
-              localStorage.removeItem(TOKEN_STORAGE_KEY);
-              localStorage.removeItem(TOKEN_TIMESTAMP_KEY);
-            }
-          } else {
-            // Only set error if we truly have no questions
-            setError("No questions found. Please try different settings.");
-          }
-        } catch (questionsErr) {
-          // Only set error state if we couldn't get any questions
-          if (!questions.length) {
-            setError("Failed to load questions. Please try again later.");
-          }
+          // Set flag to stop any further retries
+          shouldStopRetrying.current = true;
+          break;
         }
       } catch (err) {
-        // Only set error if we truly couldn't get questions
-        if (!questions.length) {
-          setError("Failed to load questions. Please try again later.");
+        console.log(`Attempt ${attempt} failed, retrying in 1 second...`);
+        
+        // Check if component is still mounted and should continue
+        if (shouldStopRetrying.current) {
+          break;
         }
-      } finally {
-        // Always set loading to false
-        setLoading(false);
+        
+        // Wait 1 second before trying again (aggressively retrying)
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
+    }
+    
+    // Even if we couldn't get questions after max retries, stop loading
+    setLoading(false);
+  }, [amount_of_question, question_category, question_difficulty, question_type]);
+  
+  // Cleanup function to stop retries when unmounting
+  useEffect(() => {
+    return () => {
+      // Set flag to stop retries when component unmounts
+      shouldStopRetrying.current = true;
     };
-
-    fetchTokenAndQuestions();
-  }, [
-    amount_of_question,
-    question_category,
-    question_difficulty,
-    question_type,
-  ]);
+  }, []);
+  
+  // Start fetching on component mount
+  useEffect(() => {
+    fetchQuestionsWithRetry();
+  }, [fetchQuestionsWithRetry]);
 
   // build and shuffle options when questionIndex or questions change
   useEffect(() => {
     if (!questions.length || !questions[questionIndex]) return;
   
-    const q = questions[questionIndex];
-    const answers = [...q.incorrect_answers];
-    answers.splice(getRandomInt(answers.length + 1), 0, q.correct_answer);
+    // Only generate options if we don't already have them for this question
+    if (!allOptions[questionIndex]) {
+      const q = questions[questionIndex];
+      const answers = [...q.incorrect_answers];
+      answers.splice(getRandomInt(answers.length + 1), 0, q.correct_answer);
+      
+      // Store options for this specific question
+      const newAllOptions = [...allOptions];
+      newAllOptions[questionIndex] = answers;
+      setAllOptions(newAllOptions);
+      
+      // Update current options
+      setOptions(answers);
+    } else {
+      // Use already generated options for this question
+      setOptions(allOptions[questionIndex]);
+    }
+    
+    // Mark timer as started once questions are loaded (in blitz mode)
+    if (isBlitz && !timerStarted) {
+      setTimerStarted(true);
+    }
+  }, [questions, questionIndex, isBlitz, allOptions, timerStarted]);
   
-    setOptions(answers);
-  }, [questions, questionIndex]);
+  // Timer effect - only runs in blitz mode
+  useEffect(() => {
+    // Only activate timer if in blitz mode and questions have loaded
+    if (isBlitz && timer > 0 && !isGameOver && questions.length > 0 && timerStarted) {
+      const interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+
+      return () => clearInterval(interval);
+    } else if (isBlitz && timer === 0 && !isGameOver && questions.length > 0 && timerStarted) {
+      // Only trigger game over if timer has been started
+      setIsGameOver(true);
+      // Navigate to score with a state indicator that we came from questions
+      navigate("/score", { state: { fromQuestions: true } });
+    }
+  }, [timer, isGameOver, isBlitz, questions.length, timerStarted, navigate]);
   
   // stores selected radio button value
   const handleValueChange = (value) => {
@@ -213,46 +242,51 @@ const Questions = () => {
     // Navigate forward
     if (questionIndex + 1 < questions.length) {
       setQuestionIndex((idx) => idx + 1);
+      
+      // No longer reset timer for each question
     } else {
-      navigate("/score");
+      // Navigate to score with a state indicator that we came from questions
+      navigate("/score", { state: { fromQuestions: true } });
     }
   };
 
   const handlePrev = () => {
     if (questionIndex > 0) {
       setQuestionIndex((idx) => idx - 1);
+      
+      // No longer reset timer when going to previous question
     }
+  };
+  
+  // Manual retry button handler
+  const handleManualRetry = () => {
+    setLoading(true);
+    setRetryCount(0);
+    setQuestions([]);
+    fetchQuestionsWithRetry();
   };
 
   if (loading)
     return (
       <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center">
         <div className="w-18 h-18 border-8 border-t-8 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-        <h3 className="ml-2">Loading Questions...</h3>
-      </div>
-    );
-    
-  if (error && !questions.length)
-    return (
-      <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center text-red-500">
-        <h3>{error}</h3>
-        <Button onClick={() => window.location.reload()}>Try Again</Button>
+        <h3 className="ml-2">Loading questions...</h3>
       </div>
     );
     
   if (!questions.length)
     return (
       <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center text-red-500">
-        <h3>There seems to be a problem, please try again later. 😥</h3>
-        <Button onClick={() => window.location.reload()}>Try Again</Button>
+        <p className="text-gray-600 mb-4">The API might be experiencing issues.</p>
+        <Button onClick={handleManualRetry}>Try Again</Button>
+        <Button onClick={() => navigate("/")}>Back to Home</Button>
       </div>
     );
 
   return (
-    <div className="w-[100vw] h-[100vh] grid grid-cols-2 gap-0">
-      
+    <div className="w-[100vw] md:h-[100vh] flex flex-col md:flex-row gap-0">
       {/* LEFT COLUMN - QUESTION*/}
-      <div className="h-full flex flex-col justify-between px-24 py-20 rounded-br-2xl rounded-tr-2xl overflow-hidden relative" 
+      <div className="flex-1 h-full flex flex-col justify-between px-4 py-8 md:px-8 md:py-12 xl:px-24 xl:py-20 rounded-bl-2xl rounded-br-2xl md:rounded-tr-2xl md:rounded-bl-none overflow-hidden relative" 
       style={{
         backgroundImage: `radial-gradient(circle at center, rgba(60, 57, 199, 0.9) 0%, rgba(60, 57, 199, 0.95) 100%), url(${blitzPng})`,
         backgroundSize: "cover",
@@ -265,6 +299,11 @@ const Questions = () => {
         <div className="text-white space-y-4">
           {/* QUESTION NUMBER */}
           <h3 className="text-off-white/75 font-medium">
+            {isBlitz && (
+              <div className="text-xl font-bold bg-white text-primary rounded-full px-4 py-1 mb-2">
+                ⏱ {timer}
+              </div>
+            )}
             Question {questionIndex + 1}/{questions.length}
           </h3>
 
@@ -283,7 +322,7 @@ const Questions = () => {
       </div>
 
       {/* RIGHT COLUMN - OPTIONS & NAV*/}
-      <div className="h-full w-full flex flex-col justify-between space-y-4 items-center px-24 py-20 overflow-hidden">
+      <div className="flex-1 h-full w-full flex flex-col justify-between space-y-4 items-center px-4 py-8 md:px-2 md:py-12 xl:px-24 xl:py-20 overflow-hidden">
 
         {/* THINKING AVATAR */}
         <img src={thinkingAvatar} alt="" className="w-[30%] h-auto"/>
@@ -292,7 +331,7 @@ const Questions = () => {
         <RadioGroup
           value={selectedOption}
           onValueChange={handleValueChange}
-          className="space-y-2 w-[80%]"
+          className="space-y-2 w-full md:w-[80%]"
         >
           {options.map((opt, i) => {
             const decoded = decode(opt);
@@ -327,7 +366,7 @@ const Questions = () => {
                   id={id}
                   disabled={isScored}
                 />
-                <Label htmlFor={id} className={`${extraClass} text-lg text-primary font-bold `}>
+                <Label htmlFor={id} className={`${extraClass} text-sm md:text-md lg:text-lg text-primary font-bold `}>
                   {decoded}
                   {extraInfo && (
                     <span>{extraInfo}</span>
@@ -357,11 +396,6 @@ const Questions = () => {
            {questionIndex + 1 === questions.length ? "Finish" : "Next"} <ArrowRight strokeWidth={2}/>
           </Button>
         </div>
-
-        {/* SCORE */}
-        {/* <div className="mt-6 text-sm text-gray-600">
-          Score: {score} / {questions.length}
-        </div> */}  
       </div>
 
     </div>

@@ -4,6 +4,7 @@ import {
   blitzSvg,
   customSvg,
   endlessSvg,
+  strikeSvg,
   grainyFilter,
   spiralShape,
   thinkingAvatar,
@@ -32,13 +33,13 @@ export const modes = [
     url: "/settings?mode=blitz",
     icon: blitzSvg,
   },
-  // CUSTOM MODE
+  // STRIKE MODE
   {
-    id: "custom",
-    title: "Custom Mode",
-    desc: "Pick your category, set the difficulty, and build your perfect quiz!",
-    url: "/settings?mode=custom",
-    icon: customSvg,
+    id: "strike",
+    title: "Strike Mode",
+    desc: "No second chances—one wrong answer and it's game over.",
+    url: "/settings?mode=strike",
+    icon: strikeSvg,
   },
   // ENDLESS MODE
   {

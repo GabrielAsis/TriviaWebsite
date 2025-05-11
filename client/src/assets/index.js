@@ -9,6 +9,7 @@ import blitzPng from "../assets/Blitz Mode Bg Pic.png"
 import blitzSvg from "../assets/Blitz Mode.svg";
 import customSvg from "../assets/Custom Mode.svg";
 import endlessSvg from "../assets/Endless mode.svg";
+import strikeSvg from "../assets/Strike Mode.svg"
 
 // misc
 import grainyFilter from "../assets/Grainy Filter.png";
@@ -34,6 +35,7 @@ export {
   blitzSvg,
   customSvg,
   endlessSvg,
+  strikeSvg,
   grainyFilter,
   spiralShape,
   thinkingAvatar,

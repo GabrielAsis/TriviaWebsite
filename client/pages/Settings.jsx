@@ -6,7 +6,10 @@ import BoxRadioField from "../src/Components/BoxRadioField";
 import TextFieldComp from "../src/Components/TextFieldComp";
 import useAxios from "../src/hooks/useAxios";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import toast from "react-hot-toast"; // Import toast
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -15,13 +18,23 @@ const Settings = () => {
   const { 
     question_category, 
     question_difficulty, 
-    question_type,
     amount_of_question 
   } = useSelector((state) => state);
+  
+  // Use local state for timer instead of Redux
+  const [blitzTimer, setBlitzTimer] = useState("");
 
-  // State to track validation errors
-  const [validationError, setValidationError] = useState("");
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const mode = queryParams.get("mode"); // Default to custom if no mode
 
+  const isBlitzMode = mode === "blitz";
+  const isEndlessMode = mode === "endless";
+  const isStrikeMode = mode === "strike"; 
+
+  const { response, error, loading } = useAxios({ url: "/api_category.php" });
+
+  // hide/show nav
   useEffect(() => {
     const navbar = document.getElementById("navbar");
     if (navbar) navbar.style.display = "none";
@@ -30,55 +43,60 @@ const Settings = () => {
     };
   }, []);
 
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const mode = queryParams.get("mode") || "custom"; // Default to custom if no mode
-
-  const isBlitzMode = mode === "blitz";
-  const isEndlessMode = mode === "endless";
-  const isCustomMode = mode === "custom"; 
-
-  const { response, error, loading } = useAxios({ url: "/api_category.php" });
+  // Timer input handler - use local state
+  const handleTimerChange = (e) => {
+    const value = parseInt(e.target.value);
+    setBlitzTimer(value);
+  };
 
   // Function to validate form and navigate
   const handleSubmit = (e) => {
     e.preventDefault(); // Prevent default form submission
     
-    // Log current values to help debug
-    console.log("Form submission values:", {
-      category: question_category,
-      difficulty: question_difficulty,
-      type: question_type,
-      amount: amount_of_question
-    });
-    
     // Validate form (check if required fields are set)
     if (!question_category) {
-      setValidationError("Please select a category");
+      toast.error("Please select a category");
       return;
     }
     
     if (!question_difficulty) {
-      setValidationError("Please select a difficulty level");
-      return;
-    }
-    
-    if (!question_type) {
-      setValidationError("Please select a question type");
+      toast.error("Please select a difficulty level");
       return;
     }
     
     if (!amount_of_question || amount_of_question < 1) {
-      setValidationError("Please enter a valid number of questions");
+      toast.error("Please enter a valid number of questions");
+      return;
+    }
+
+    if (amount_of_question > 20) {
+      toast.error("Maximum 20 questions allowed");
       return;
     }
     
-    // All validations passed, clear errors and navigate
-    setValidationError("");
-    console.log("All validations passed, navigating to /questions");
+    // Validate timer if in blitz mode
+    if (isBlitzMode) {
+      const timerValue = blitzTimer === "" ? 0 : parseInt(blitzTimer);
+      if (!timerValue || timerValue < 10) {
+        toast.error("Timer must be at least 10 seconds");
+        return;
+      }
+      
+      if (timerValue > 300) {
+        toast.error("Timer cannot exceed 5 minutes (300 seconds)");
+        return;
+      }
+    }
     
-    // Use the programmatic navigation instead of Link
-    navigate(`/questions`);
+    // All validations passed, show success toast and navigate
+    toast.success("Starting your trivia game!");
+    
+    // Make sure to include the mode parameter AND timer in URL for blitz mode
+    if (isBlitzMode) {
+      navigate(`/questions?mode=${mode}&timer=${blitzTimer}`);
+    } else {
+      navigate(`/questions?mode=${mode}`);
+    }
   };
 
   if (loading) {
@@ -93,9 +111,15 @@ const Settings = () => {
   if (error) {
     console.log("Error Details:", error);
     console.log("Response Data:", response);
+    
+    // Use toast for error instead of returning error UI
+    toast.error("Failed to load settings. Please try again.");
+    
     return (
-      <div className="mt-20 text-center text-red-500">
-        Something Went Wrong!
+      <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center">
+        <Button onClick={() => window.location.reload()} className="mt-4">
+          Retry
+        </Button>
       </div>
     );
   }
@@ -106,15 +130,15 @@ const Settings = () => {
     { id: "hard", name: "Hard" },
   ];
 
-  const typeOptions = [
-    { id: "multiple", name: "Multiple Choice" },
-    { id: "boolean", name: "True/False" },
-  ];
-
   return (
     <>
-      <div className="flex flex-col justify-center items-center w-full h-[110vh] bg-off-white">
-        <div className="p-8 bg-white w-[800px] m-auto rounded-xl shadow-sm">
+      <div className="flex flex-col justify-center items-center w-full h-[100vh] bg-off-white relative">
+        <div className="absolute top-2 left-2">
+          <Link to="/">
+            <Button variant="link" className="text-primary" ><ArrowLeft strokeWidth={2}/> Back to Home</Button>
+          </Link>
+        </div>
+        <div className="p-8 bg-white w-[700px] m-auto rounded-xl shadow-sm">
           <form onSubmit={handleSubmit} className="text-center flex flex-col gap-2">
             <div>
               <h2 className="text-2xl font-bold mb-2">{mode?.charAt(0).toUpperCase() + mode?.slice(1)} Mode</h2>
@@ -122,17 +146,12 @@ const Settings = () => {
                 {isBlitzMode 
                   ? "Welcome to Blitz! Race the clock, answer fast, and rack up points before time runs out!" 
                   : isEndlessMode 
-                    ? "Welcome to Endless! Keep answering questions until you miss one. How long can you go?" 
-                    : "Welcome! Customize your trivia experience with the options below."}
+                    ? "Welcome to Endless!  Answer endlessly with 3 lives. Lose them all, and it's game over!" 
+                  : isStrikeMode
+                    ? "Welcome to Strike! Keep answering questions until you miss one. How long can you go?"
+                    : "Welcome! Customize your trivia experience."}
               </p>
             </div>
-            
-            {/* Display validation error if any */}
-            {validationError && (
-              <div className="my-2 p-2 bg-red-100 text-red-600 rounded-md">
-                {validationError}
-              </div>
-            )}
             
             {/* Category dropdown */}
             <SelectField 
@@ -141,12 +160,28 @@ const Settings = () => {
               className="w-full" 
             />
             
-            {/* Box radio buttons for difficulty and type */}
+            {/* Box radio buttons for difficulty */}
             <BoxRadioField options={difficultyOptions} label="Difficulty" />
-            <BoxRadioField options={typeOptions} label="Type" />
             
             {/* Number of questions */}
             <TextFieldComp />
+            
+            {/* Timer input - only shown in Blitz mode */}
+            {isBlitzMode && (
+              <div className="mt-5 space-y-2">
+                <Label htmlFor="timer">Timer (seconds)</Label>
+                <Input
+                  id="timer"
+                  type="number"
+                  value={blitzTimer}
+                  onChange={handleTimerChange}
+                  placeholder="Enter time in seconds"
+                  min="10"
+                  max="300"
+                  className="w-full"
+                />
+              </div>
+            )}
             
             <div className="mt-4">
               {/* Use button type="submit" to trigger form validation */}
