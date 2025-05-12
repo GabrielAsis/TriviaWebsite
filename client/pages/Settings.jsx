@@ -164,7 +164,9 @@ const Settings = () => {
             <BoxRadioField options={difficultyOptions} label="Difficulty" />
             
             {/* Number of questions */}
-            <TextFieldComp />
+            {!isEndlessMode && (
+              <TextFieldComp />
+            )}
             
             {/* Timer input - only shown in Blitz mode */}
             {isBlitzMode && (
