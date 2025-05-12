@@ -6,17 +6,14 @@ import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/comp
 
 import { ArrowRight } from "lucide-react"
 
+import { modes } from "../src/constants"
+
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import FadeInUp from '../src/Components/animations/FadeUp';
-
-import { modes } from "../src/constants"
-
-
 gsap.registerPlugin(useGSAP);
 
 export default function Home() {
-  // Ref Variables
   const spiralRef = useRef(null)
 
   // GSAP Animations
@@ -67,6 +64,7 @@ export default function Home() {
         <div  className='flex flex-col justify-center items-center space-y-8 h-full'>
           {/* SPIRAL IMAGE */}
           <div ref={spiralRef} className='z-10 w-[150%] md:w-[110%] h-auto absolute left-1/2 top-1/2'><img className='w-full h-auto' src="../src/assets/Spiral Shape.png" alt="" /></div>
+
 
           <div className='z-20 max-w-3xl px-4 sm:px-6 lg:px-8'>
             <FadeInUp delay={0.5} className='space-y-6'>

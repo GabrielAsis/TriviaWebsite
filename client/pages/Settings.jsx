@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import SelectField from "../src/Components/SelectField";
 import BoxRadioField from "../src/Components/BoxRadioField";
@@ -13,6 +13,7 @@ import toast from "react-hot-toast"; // Import toast
 
 const Settings = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   
   // Get all required values from Redux store
   const { 
@@ -43,6 +44,17 @@ const Settings = () => {
     };
   }, []);
 
+  // Set default amount of questions for endless mode
+  useEffect(() => {
+    // If we're in endless mode, set a default of 20 questions
+    if (isEndlessMode && (!amount_of_question || amount_of_question < 1)) {
+      dispatch({
+        type: 'CHANGE_AMOUNT',
+        payload: { amount: 20 }
+      });
+    }
+  }, [isEndlessMode, amount_of_question, dispatch]);
+
   // Timer input handler - use local state
   const handleTimerChange = (e) => {
     const value = parseInt(e.target.value);
@@ -64,14 +76,25 @@ const Settings = () => {
       return;
     }
     
-    if (!amount_of_question || amount_of_question < 1) {
-      toast.error("Please enter a valid number of questions");
-      return;
-    }
+    // Only validate amount of questions if NOT in Endless mode
+    if (!isEndlessMode) {
+      if (!amount_of_question || amount_of_question < 1) {
+        toast.error("Please enter a valid number of questions");
+        return;
+      }
 
-    if (amount_of_question > 20) {
-      toast.error("Maximum 20 questions allowed");
-      return;
+      if (amount_of_question > 20) {
+        toast.error("Maximum 20 questions allowed");
+        return;
+      }
+    } else {
+      // For endless mode, set a default of 20 questions if not already set
+      if (!amount_of_question || amount_of_question < 1) {
+        dispatch({
+          type: 'CHANGE_AMOUNT',
+          payload: { amount: 20 }
+        });
+      }
     }
     
     // Validate timer if in blitz mode
@@ -93,9 +116,9 @@ const Settings = () => {
     
     // Make sure to include the mode parameter AND timer in URL for blitz mode
     if (isBlitzMode) {
-      navigate(`/questions?mode=${mode}&timer=${blitzTimer}`);
+      navigate(`/questions?mode=${mode}&timer=${blitzTimer}&timerStarted=true`);
     } else {
-      navigate(`/questions?mode=${mode}`);
+      navigate(`/questions?mode=${mode}&timerStarted=true`);
     }
   };
 
@@ -163,7 +186,7 @@ const Settings = () => {
             {/* Box radio buttons for difficulty */}
             <BoxRadioField options={difficultyOptions} label="Difficulty" />
             
-            {/* Number of questions */}
+            {/* Number of questions - only show if NOT in endless mode */}
             {!isEndlessMode && (
               <TextFieldComp />
             )}
@@ -188,7 +211,7 @@ const Settings = () => {
             <div className="mt-4">
               {/* Use button type="submit" to trigger form validation */}
               <Button type="submit" className="px-6 py-2 gap-2">
-                Play! <ArrowRight />
+                Play! <ArrowRight strokeWidth={2} />
               </Button>
             </div>
           </form>

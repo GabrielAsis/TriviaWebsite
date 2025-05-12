@@ -37,7 +37,7 @@ const Questions = () => {
   const isEndless = mode === "endless";
   const isStrike = mode === "strike";
 
-  // FIX: Use specific selectors instead of selecting the entire state
+  // Get values from Redux store
   const question_category = useSelector((state) => state.question_category);
   const question_difficulty = useSelector((state) => state.question_difficulty);
   const question_type = useSelector((state) => state.question_type);
@@ -63,7 +63,11 @@ const Questions = () => {
   // Timer states - use default from URL parameter or 60 seconds
   const [timer, setTimer] = useState(isBlitz ? defaultTimer : 0);
   const [isGameOver, setIsGameOver] = useState(false);
-  const [timerStarted, setTimerStarted] = useState(false);
+  
+  // FIX: Set timerStarted state based on URL parameter or default to true
+  // This ensures the timer actually starts counting down
+  const timerStartedParam = queryParams.get("timerStarted");
+  const [timerStarted, setTimerStarted] = useState(timerStartedParam === "true" || true);
 
   // Use a ref to track if we should stop retrying
   const shouldStopRetrying = useRef(false);
@@ -109,51 +113,87 @@ const Questions = () => {
     };
   }, []);
   
-  // Brute force fetch with retries regardless of errors - EXACT from SimpleQuestions
-  const fetchQuestionsWithRetry = useCallback(async (maxRetries = 10) => {
+  // Brute force fetch with retries regardless of errors
+  const fetchQuestionsWithRetry = useCallback(async (maxRetries = 10, isAdditionalFetch = false) => {
+    // Only skip fetching for initial load, not for endless mode additional fetches
+    if (questions.length > 0 && !isAdditionalFetch) {
+      console.log("Questions already loaded, skipping initial fetch");
+      return [];
+    }
+    
     let attempt = 0;
     let success = false;
+    let fetchedQuestions = [];
     
-    // Reset the stop flag when starting a new fetch
-    shouldStopRetrying.current = false;
+    // Reset the stop flag when starting a new fetch for initial load
+    if (!isAdditionalFetch) {
+      shouldStopRetrying.current = false;
+    }
     
     while (!success && attempt < maxRetries && !shouldStopRetrying.current) {
       try {
         attempt++;
-        setRetryCount(attempt);
+        if (!isAdditionalFetch) {
+          setRetryCount(attempt);
+        }
         
-        // Build API URL with Redux state
-        let apiUrl = `https://opentdb.com/api.php?amount=${amount_of_question}`;
-        if (question_category) apiUrl += `&category=${question_category}`;
+        const urlCategory = queryParams.get("category");
+        const categoryToUse = urlCategory || question_category;
+        
+        // For additional fetch in endless mode, always get 10 more
+        const amountToFetch = isAdditionalFetch ? 10 : amount_of_question;
+        
+        let apiUrl = `https://opentdb.com/api.php?amount=${amountToFetch}`;
+        if (categoryToUse) apiUrl += `&category=${categoryToUse}`;
         if (question_difficulty) apiUrl += `&difficulty=${question_difficulty}`;
         if (question_type) apiUrl += `&type=${question_type}`;
         
+        console.log(`${isAdditionalFetch ? "Endless mode" : "Attempt " + attempt}: Fetching questions with URL:`, apiUrl);
+        
         const response = await axios.get(apiUrl);
         
-        if (response.data.results && response.data.results.length > 0) {
-          setQuestions(response.data.results);
-          success = true;
-          
-          // Set flag to stop any further retries
-          shouldStopRetrying.current = true;
-          break;
+        // Check for valid response structure
+        if (response.data && response.data.response_code !== undefined) {
+          // OpenTrivia API uses response_code to indicate status
+          if (response.data.response_code === 0 && 
+              response.data.results && 
+              response.data.results.length > 0) {
+              
+            console.log(`Success! Received ${response.data.results.length} questions`);
+            fetchedQuestions = response.data.results;
+            
+            if (!isAdditionalFetch) {
+              setQuestions(fetchedQuestions);
+              setTimerStarted(true);
+              shouldStopRetrying.current = true;
+            }
+            
+            success = true;
+            break;
+          } else {
+            console.log(`API returned response code ${response.data.response_code}, retrying...`);
+          }
+        } else {
+          console.log("Received malformed API response, retrying...");
         }
       } catch (err) {
-        console.log(`Attempt ${attempt} failed, retrying in 1 second...`);
+        console.log(`${isAdditionalFetch ? "Endless mode" : "Attempt " + attempt} failed with error: ${err.message}, retrying in 1 second...`);
         
-        // Check if component is still mounted and should continue
         if (shouldStopRetrying.current) {
           break;
         }
         
-        // Wait 1 second before trying again (aggressively retrying)
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
     
-    // Even if we couldn't get questions after max retries, stop loading
-    setLoading(false);
-  }, [amount_of_question, question_category, question_difficulty, question_type]);
+    if (!isAdditionalFetch) {
+      setLoading(false);
+    }
+    
+    return fetchedQuestions;
+  }, [amount_of_question, question_category, question_difficulty, question_type, queryParams]);
+
   
   // Cleanup function to stop retries when unmounting
   useEffect(() => {
@@ -165,7 +205,9 @@ const Questions = () => {
   
   // Start fetching on component mount
   useEffect(() => {
-    fetchQuestionsWithRetry();
+    if (questions.length === 0) {
+      fetchQuestionsWithRetry();
+    }
   }, [fetchQuestionsWithRetry]);
 
   // build and shuffle options when questionIndex or questions change
@@ -189,15 +231,20 @@ const Questions = () => {
   
   // Timer effect - only runs in blitz mode
   useEffect(() => {
+    console.log("Timer effect running. isBlitz:", isBlitz, "timer:", timer, "isGameOver:", isGameOver, 
+                "questions.length:", questions.length, "timerStarted:", timerStarted);
+                
     // Only activate timer if in blitz mode and questions have loaded
-    if (isBlitz && timer > 0 && !isGameOver && questions.length > 0 && timerStarted) {
+    if (isBlitz && timer > 0 && !isGameOver && questions.length > 0) {
+      console.log("Starting timer countdown");
       const interval = setInterval(() => {
         setTimer((prev) => prev - 1);
       }, 1000);
 
       return () => clearInterval(interval);
-    } else if (isBlitz && timer === 0 && !isGameOver && questions.length > 0 && timerStarted) {
-      // Only trigger game over if timer has been started
+    } else if (isBlitz && timer === 0 && !isGameOver && questions.length > 0) {
+      console.log("Timer reached zero, ending game");
+      // Trigger game over
       setIsGameOver(true);
       // Navigate to score with a state indicator that we came from questions
       navigate("/score", { state: { fromQuestions: true } });
@@ -206,6 +253,11 @@ const Questions = () => {
   
   // stores selected radio button value
   const handleValueChange = (value) => {
+    // Start timer when user first interacts with the quiz
+    if (!timerStarted) {
+      setTimerStarted(true);
+    }
+    
     const updatedAnswers = [...selectedAnswers];
     updatedAnswers[questionIndex] = value;
     setSelectedAnswers(updatedAnswers);
@@ -213,6 +265,11 @@ const Questions = () => {
 
   // submits answer & moves to next question
   const handleNext = async () => {
+    if (!questions[questionIndex]) {
+      console.error("No question found at index:", questionIndex);
+      return;
+    }
+
     const correct = decode(questions[questionIndex].correct_answer);
     const selected = selectedAnswers[questionIndex];
 
@@ -227,13 +284,14 @@ const Questions = () => {
 
       if (isCorrect) {
         dispatch(handleScoreChange(score + 1));
-      } else if (isEndless || isStrike) {
+      } else if ((isEndless || isStrike) && lives > 0) {
         // Deduct a life if the answer is wrong in endless or strike mode
         setLives((prevLives) => {
           const newLives = prevLives - 1;
           if (newLives <= 0) {
-            // Trigger finish if no lives are left
-            handleFinish();
+            // Trigger finish if no lives are left after a short delay
+            // to allow state updates to complete
+            setTimeout(() => handleFinish(), 100);
           }
           return newLives;
         });
@@ -242,55 +300,63 @@ const Questions = () => {
       setScoredQuestions([...scoredQuestions, questionIndex]);
     }
 
-    // Check if in endless mode
+    // Logic for different modes
     if (isEndless) {
-      if (questionIndex + 1 === questions.length) {
-        // Fetch more questions and append them
+      // Check if we need more questions
+      if (questionIndex + 1 >= questions.length) {
+        console.log("Reached end of questions, fetching more...");
         const newQuestions = await fetchMoreQuestions();
-        setQuestions((prev) => [...prev, ...newQuestions]);
+        if (newQuestions && newQuestions.length > 0) {
+          console.log("Adding", newQuestions.length, "new questions");
+          setQuestions((prev) => [...prev, ...newQuestions]);
+        } else {
+          console.log("Failed to fetch more questions, ending game");
+          handleFinish();
+          return;
+        }
       }
-      setQuestionIndex((idx) => idx + 1);
-    } else if (isStrike) {
-      // Advance to the next question in strike mode if the answer is correct
-      if (selected === correct && questionIndex + 1 < questions.length) {
+      
+      // Only advance if we have lives left
+      if (lives > 0) {
         setQuestionIndex((idx) => idx + 1);
-      } else if (selected === correct && questionIndex + 1 === questions.length) {
-        // If it's the last question, finish the quiz
+      } else {
         handleFinish();
       }
+    } else if (isStrike) {
+      // In strike mode, only advance if answer is correct
+      if (selected === correct) {
+        if (questionIndex + 1 < questions.length) {
+          setQuestionIndex((idx) => idx + 1);
+        } else {
+          // Last question answered correctly
+          handleFinish();
+        }
+      } else {
+        // Wrong answer in strike mode
+        if (lives <= 0) {
+          handleFinish();
+        }
+      }
     } else {
-      // Navigate forward for normal or blitz mode
+      // Normal or blitz mode
       if (questionIndex + 1 < questions.length) {
         setQuestionIndex((idx) => idx + 1);
       } else {
-        // Navigate to score with a state indicator that we came from questions
+        // End of questions
         navigate("/score", { state: { fromQuestions: true } });
       }
     }
   };
 
-  const fetchMoreQuestions = async () => {
-    try {
-      let apiUrl = `https://opentdb.com/api.php?amount=10`; // Fetch 10 more questions
-      if (question_category) apiUrl += `&category=${question_category}`;
-      if (question_difficulty) apiUrl += `&difficulty=${question_difficulty}`;
-      if (question_type) apiUrl += `&type=${question_type}`;
 
-      const response = await axios.get(apiUrl);
-      if (response.data.results && response.data.results.length > 0) {
-        return response.data.results;
-      }
-    } catch (err) {
-      console.error("Failed to fetch more questions:", err);
-    }
-    return [];
+  const fetchMoreQuestions = async () => {
+    console.log("Fetching more questions for endless mode");
+    return await fetchQuestionsWithRetry(5, true); // 5 retries max, and flag as additional fetch
   };
 
   const handlePrev = () => {
     if (questionIndex > 0) {
       setQuestionIndex((idx) => idx - 1);
-      
-      // No longer reset timer when going to previous question
     }
   };
   
@@ -345,9 +411,9 @@ const Questions = () => {
               <div className="flex items-center space-x-1">
                 {Array.from({ length: 3 }).map((_, index) => (
                   index < lives ? (
-                    <Heart key={index} className="text-red-500 w-6 h-6" />
+                    <Heart key={index} fill="red" className="text-red-500 w-6 h-6" />
                   ) : (
-                    <HeartOff key={index} className="text-gray-400 w-6 h-6" />
+                    <HeartCrack key={index} className="text-red-500 w-6 h-6" />
                   )
                 ))}
               </div>
@@ -388,10 +454,10 @@ const Questions = () => {
               decoded === decode(questions[questionIndex].correct_answer);
             const isSelected = decoded === selectedOption;
             const isScored = scoredQuestions.includes(questionIndex);
-    
+
             let extraInfo = "";
             let extraClass = "";
-    
+
             if (isScored) {
               if (isCorrectAnswer) {
                 extraInfo = "✅ Correct";
@@ -401,11 +467,12 @@ const Questions = () => {
                 extraClass = "text-red-600 font-medium";
               }
             }
-    
+
             return (
-              <div
+              <label
                 key={i}
-                className={`flex items-center space-x-2 border-primary border-3 rounded-full px-2 py-2 w-full ${
+                htmlFor={id}
+                className={`flex items-center space-x-2 border-primary border-3 rounded-full px-2 py-2 w-full cursor-pointer ${
                   isScored ? "opacity-80" : ""
                 }`}
               >
@@ -414,13 +481,14 @@ const Questions = () => {
                   id={id}
                   disabled={isScored}
                 />
-                <Label htmlFor={id} className={`${extraClass} text-sm md:text-md lg:text-lg text-primary font-bold `}>
+                <Label
+                  htmlFor={id}
+                  className={`${extraClass} text-sm md:text-md lg:text-lg text-primary font-bold`}
+                >
                   {decoded}
-                  {extraInfo && (
-                    <span>{extraInfo}</span>
-                  )}
+                  {extraInfo && <span>{extraInfo}</span>}
                 </Label>
-              </div>
+              </label>
             );
           })}
         </RadioGroup>

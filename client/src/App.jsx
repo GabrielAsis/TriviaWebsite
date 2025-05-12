@@ -10,7 +10,9 @@ import Login from "../pages/Login";
 import { Dashboard } from '../pages/Dashboard';
 import Blitz from '../pages/Blitz';
 import Endless from '../pages/Endless';
-import SimpleQuestions from '../pages/SimpleQuestions';
+import Categories from '../pages/Categories';
+
+// import SimpleQuestions from '../pages/SimpleQuestions';
 
 // import components
 import NavBar from "./Components/NavBar";
@@ -51,8 +53,9 @@ function App() {
           <Route path="/score" element={<FinalScore />} />
 
           <Route path="/blitz" element={<Blitz />} />
-          
-          <Route path="/test" element={<SimpleQuestions />} />
+
+          <Route path="/categories" element={<Categories />} />
+
         </Routes>
       </Router>
     </ UserContextProvider>
