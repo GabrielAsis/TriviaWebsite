@@ -35,15 +35,6 @@ const Settings = () => {
 
   const { response, error, loading } = useAxios({ url: "/api_category.php" });
 
-  // hide/show nav
-  useEffect(() => {
-    const navbar = document.getElementById("navbar");
-    if (navbar) navbar.style.display = "none";
-    return () => {
-      if (navbar) navbar.style.display = "block";
-    };
-  }, []);
-
   // Set default amount of questions for endless mode
   useEffect(() => {
     // If we're in endless mode, set a default of 20 questions

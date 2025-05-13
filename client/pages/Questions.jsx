@@ -104,15 +104,6 @@ const Questions = () => {
   // Get the selected option for the current question
   const selectedOption = selectedAnswers[questionIndex] || "";
   
-  // hide/show nav
-  useEffect(() => {
-    const navbar = document.getElementById("navbar");
-    if (navbar) navbar.style.display = "none";
-    return () => {
-      if (navbar) navbar.style.display = "block";
-    };
-  }, []);
-  
   // Brute force fetch with retries regardless of errors
   const fetchQuestionsWithRetry = useCallback(async (maxRetries = 10, isAdditionalFetch = false) => {
     // Only skip fetching for initial load, not for endless mode additional fetches
