@@ -13,6 +13,9 @@ import strikeSvg from "../assets/Strike Mode.svg"
 import one from "../assets/1.svg"
 import two from "../assets/2.svg"
 import three from "../assets/3.svg"
+import whiteBlitz from "../assets/White Blitz Mode.svg"
+import whiteStrike from "../assets/White Strike Mode.svg";
+import whiteEndless from "../assets/White Endless Mode.svg";
 
 // misc
 import grainyFilter from "../assets/Grainy Filter.png";
@@ -108,4 +111,7 @@ export {
   one,
   two,
   three,
+  whiteBlitz,
+  whiteEndless,
+  whiteStrike,
 }

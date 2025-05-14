@@ -131,7 +131,7 @@
               ][i];
               if (!user) return <div key={i} className="flex-1"></div>;
               return (
-                <div key={user.id} className="flex flex-col items-center flex-1 gap-8">
+                <FadeInUp key={user.id} className="flex flex-col items-center flex-1 gap-8" triggerStart='top 50%'>
                   {/* NAME */}
                   <div className="flex flex-col text-center gap-0.5">
                     <p className='text-primary text-sm'>{(user.questionsAnswered ?? 0) > 0
@@ -147,7 +147,7 @@
                       <h3 className='font-black'>{podium.place === 1 ? "1" : podium.place === 2 ? "2" : "3"} </h3>
                     </div>
                   </div>
-                </div>
+                </FadeInUp>
               );
             })}
           </div>
@@ -157,8 +157,8 @@
               <h3 className="ml-2">Loading questions...</h3>
             </div>
           ) : (
-            <div className="w-full overflow-x-auto">
-              <div className="min-w-[500px] flex flex-col">
+            <div className="w-full overflow-y-hidden overflow-x-auto">
+              <FadeInUp className="min-w-[500px] flex flex-col"  triggerStart='8% 50%'>
                 {/* Header */}
                 <div className="flex font-medium px-6 py-2">
                   <div className="w-1/6 text-left">Rank</div>
@@ -184,7 +184,7 @@
                     </div>
                   ))}
                 </div>
-              </div>
+              </FadeInUp>
             </div>
           )}
         </div>

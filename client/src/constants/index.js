@@ -21,6 +21,9 @@ import {
   avatar9,
   avatar10,
   avatar11,
+  whiteBlitz,
+  whiteStrike,
+  whiteEndless,
 } from "../assets"
 
 // MODES DATA
@@ -32,6 +35,7 @@ export const modes = [
     desc: "Race the clock, answer fast, and rack up points before time runs out!",
     url: "/settings?mode=blitz",
     icon: blitzSvg,
+    whiteIcon: whiteBlitz,
   },
   // STRIKE MODE
   {
@@ -40,6 +44,8 @@ export const modes = [
     desc: "No second chances—one wrong answer and it's game over.",
     url: "/settings?mode=strike",
     icon: strikeSvg,
+    whiteIcon: whiteStrike,
+
   },
   // ENDLESS MODE
   {
@@ -48,5 +54,6 @@ export const modes = [
     desc: "Answer endlessly, stay alive with 3 lives, and see how far you can go!",
     url: "/settings?mode=endless",
     icon: endlessSvg,
+    whiteIcon: whiteEndless,
   } 
 ]
