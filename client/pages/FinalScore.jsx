@@ -25,6 +25,8 @@ const FinalScore = () => {
   // Create a local reliable user state
   const [currentUser, setCurrentUser] = useState(null);
   const [userDataFetched, setUserDataFetched] = useState(false);
+
+  const { amount_of_question } = useSelector((state) => state);
   
   // Check if this is a valid visit to the score page
   useEffect(() => {
@@ -155,11 +157,18 @@ const FinalScore = () => {
         // Get current points value from our reliable user data
         const currentPoints = currentUser.points || 0;
         const newPoints = currentPoints + pointsToAdd;
+
+        const questionsAnswered = Number(currentUser.questionsAnswered || 0) + Number(amount_of_question);// get from Redux or props
+        const questionsCorrect = (currentUser.questionsCorrect || 0) + score;
+        const accuracy = questionsAnswered > 0 ? (questionsCorrect / questionsAnswered) : 0;
         
         // Update Firestore
         const userDocRef = doc(db, "Users", currentUser.uid);
         await updateDoc(userDocRef, {
-          points: newPoints
+          points: newPoints,
+          questionsAnswered,
+          questionsCorrect,
+          accuracy,
         });
         
         // Mark as updated in sessionStorage using the completion token
@@ -170,8 +179,11 @@ const FinalScore = () => {
         
         // Update context with new points value
         setUser({
-          ...currentUser, 
-          points: newPoints
+          ...currentUser,
+          points: newPoints,
+          questionsAnswered,
+          questionsCorrect,
+          accuracy,
         });
       } catch (error) {
         console.error("Error updating points:", error);

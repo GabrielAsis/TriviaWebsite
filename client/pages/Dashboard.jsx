@@ -118,6 +118,14 @@ export const Dashboard = () => {
                     <p className="text-3xl font-bold text-primary">{userDetails.points}</p>
                     <p className="text-sm text-gray-600">Total Points</p>
                   </div>
+                  <div className="mb-2">
+                    <p className="font-medium">Accuracy:</p>
+                    <p>
+                      {userDetails.questionsAnswered
+                        ? `${((userDetails.questionsCorrect / userDetails.questionsAnswered) * 100).toFixed(1)}%`
+                        : "N/A"}
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-32">

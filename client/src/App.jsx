@@ -9,6 +9,7 @@ import { Dashboard } from '../pages/Dashboard';
 import Blitz from '../pages/Blitz';
 import Endless from '../pages/Endless';
 import Categories from '../pages/Categories';
+import Leaderboard from '../pages/Leaderboard';
 
 // import components
 import NavBar from "./Components/NavBar";
@@ -50,6 +51,7 @@ function AppContent() {
         <Route path="/score" element={<FinalScore />} />
         <Route path="/blitz" element={<Blitz />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
       </Routes>
       {!shouldHideNavAndFooter && <Footer />}
     </>

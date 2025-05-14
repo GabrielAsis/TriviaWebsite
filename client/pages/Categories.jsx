@@ -83,7 +83,7 @@ const Categories = () => {
       // Add continuous spinning animation after the initial animation
       .to(spiralRef.current, {
         rotation: '+=360',
-        duration: 60,
+        duration: 30,
         repeat: -1,
         ease: 'none',
         transformOrigin: '50% 50%',

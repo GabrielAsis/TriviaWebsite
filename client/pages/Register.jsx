@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 // assets imports
 import { logo } from '../src/assets';
 
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth, db } from "../src/Components/firebase";
 import { setDoc, doc } from "firebase/firestore";
 
@@ -38,23 +38,23 @@ export default function Register({ isOpen, setIsOpen, openLogin }) {
       
       // Store additional user data in Firestore with points initialized to 0
       await setDoc(doc(db, "Users", user.uid), {
-        email: email, // Use the email from state, not user.email (to ensure consistency)
+        email: email, 
         name: username,
-        points: 0  // Initialize points to 0 for new users
+        points: 0
       });
       
       console.log("User registered successfully");
       
+      // Sign out the user immediately after registration
+      await signOut(auth);
+      
       // Close the register dialog and show success message
       setIsOpen(false);
       toast.success('Account registered successfully! Please login to continue.');
-      
-      // Wait a brief moment before opening the login dialog
-      // This gives time for the register dialog to close first
       setTimeout(() => {
-        openLogin(); // Open the login dialog
+        openLogin(); // This opens the login modal
       }, 300);
-      
+          
     } catch (error) {
       console.error("Registration error:", error.message, error.code);
       

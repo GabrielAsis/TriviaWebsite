@@ -115,7 +115,7 @@ const NavBar = () => {
             <SheetContent side="right" className="w-[250px]">
               <div className="space-y-4 m-8 text-off-white">
                 <Link to="/categories" onClick={() => setOpen(false)} className="block">Categories</Link>
-                <Link to="/leaderboards" onClick={() => setOpen(false)} className="block">Leaderboards</Link>
+                <Link to="/leaderboard" onClick={() => setOpen(false)} className="block">Leaderboard</Link>
                 <Link to="/modes" onClick={() => setOpen(false)} className="block">Modes</Link>
 
                 <div className="flex flex-col space-y-4 w-fit">
@@ -162,10 +162,10 @@ const NavBar = () => {
         {/* DESKTOP NAV */}
         <nav className="hidden lg:flex lg:gap-x-8 text-off-white">
           <Link to="/categories" className="text-sm">
-            <Button variant='ghost' className='rounded-md font-normal'>Categories</Button>
+            <Button variant='ghost' className='rounded-md font-normal'>Categories</Button>  
           </Link>
-          <Link to="/leaderboards" className="text-sm">
-            <Button variant='ghost' className='rounded-md font-normal'>Leaderboards</Button>
+          <Link to="/leaderboard" className="text-sm">
+            <Button variant='ghost' className='rounded-md font-normal'>Leaderboard</Button>
           </Link>
           <Link to="/modes" className="text-sm">
             <Button variant='ghost' className='rounded-md font-normal'>Modes</Button>

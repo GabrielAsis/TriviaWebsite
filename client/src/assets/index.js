@@ -10,6 +10,9 @@ import blitzSvg from "../assets/Blitz Mode.svg";
 import customSvg from "../assets/Custom Mode.svg";
 import endlessSvg from "../assets/Endless mode.svg";
 import strikeSvg from "../assets/Strike Mode.svg"
+import one from "../assets/1.svg"
+import two from "../assets/2.svg"
+import three from "../assets/3.svg"
 
 // misc
 import grainyFilter from "../assets/Grainy Filter.png";
@@ -102,4 +105,7 @@ export {
   gadget,
   anime,
   cartoons,
+  one,
+  two,
+  three,
 }
