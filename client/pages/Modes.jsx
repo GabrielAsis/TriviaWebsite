@@ -71,21 +71,18 @@ const Modes = () => {
           <img className='w-full h-auto' src="../src/assets/Fan Blades.png" alt=" " />
         </div>
 
-      <div className='relative container w-full z-20'>
-        <FadeInUp triggerStart='top 100%' className='w-full grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8'>
+      <div className='relative container z-20 overflow-hidden'>
+        <FadeInUp triggerStart='top 100%' className='flex flex-col md:flex-row items-center justify-center gap-10 overflow-hidden'>
           {modes.map((mode, index) => (
-            <Link 
+            <Link   
               key={`${mode.id}-${index}`} 
               to={mode.url} 
               state={{ mode: mode.id }}   
-              className="block min-h-full"
+              className="w-full overflow-hidden rounded-xl flex justify-center items-center"
               tabIndex={-1}
+              onMouseMove={e => handleMouseMove(e, index)}
+              onMouseLeave={handleMouseLeave}
             >
-              <div
-                className="relative group min-h-full rounded-xl overflow-hidden flex justify-center items-center"
-                onMouseMove={e => handleMouseMove(e, index)}
-                onMouseLeave={handleMouseLeave}
-              >
                 {/* Glow effect */}
                 {glow.index === index && (
                   <div
@@ -97,7 +94,7 @@ const Modes = () => {
                     }}
                   />
                 )}
-                <Card className='relative z-10 w-full max-w-[360px] p-0 aspect-square border-1 boder-white/80 text-white justify-center items-center md:min-h-full bg-white/10 backdrop-blur-sm shadow-none cursor-pointer transition'>
+                <Card className='relative z-10 w-full max-w-[360px] md:max-w-none p-0 aspect-square border-1 boder-white/80 text-white justify-center items-center md:min-h-full bg-white/10 backdrop-blur-sm shadow-none cursor-pointer transition overflow-hiddem'>
                   <CardHeader className='space-y-4 w-full flex flex-col justify-center items-center'>
                     <div><img src={mode.whiteIcon} className=' sm:h-18 sm:w-18 lg:w-40 lg:h-40' /></div>
                     <div className='space-y-3'>
@@ -105,7 +102,6 @@ const Modes = () => {
                     </div>
                   </CardHeader>
                 </Card>
-              </div>
             </Link>
           ))}
         </FadeInUp>

@@ -1,52 +1,55 @@
 import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../context/userContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
 // Firebase imports
 import { signOut } from "firebase/auth";
 import { auth, db } from "../src/Components/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+
+import { ArrowRight, LogIn, LogOut, Puzzle } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Dashboard = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [placement, setPlacement] = useState(null); // <-- Add this
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up the auth state listener
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        console.log("User authenticated:", user.uid);
         try {
           const docRef = doc(db, "Users", user.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setUserDetails({
-              uid: user.uid,
-              ...docSnap.data()
+            const details = { uid: user.uid, ...docSnap.data() };
+            setUserDetails(details);
+
+            // Fetch all users sorted by points
+            const usersRef = collection(db, "Users");
+            const q = query(usersRef, orderBy("points", "desc"));
+            const querySnapshot = await getDocs(q);
+            const usersList = [];
+            querySnapshot.forEach((doc) => {
+              usersList.push({ id: doc.id, ...doc.data() });
             });
-          } else {
-            console.log("User document not found");
-            toast.error("Could not load user profile");
-            setUserDetails(null);
+
+            // Find the user's rank (index + 1)
+            const rank = usersList.findIndex(u => u.id === user.uid);
+            setPlacement(rank !== -1 ? rank + 1 : null);
           }
         } catch (error) {
-          console.error("Error fetching user data:", error);
-          toast.error("Error loading profile data");
-          setUserDetails(null);
+          // handle error
         }
-      } else {
-        console.log("User is not logged in");
-        setUserDetails(null);
       }
       setLoading(false);
     });
-    
-    // Clean up function to unsubscribe when component unmounts
+
     return () => unsubscribe();
   }, []);
 
@@ -94,63 +97,95 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="container py-20">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="bg-primary text-white p-6">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <h2 className="text-xl mt-2">Welcome back, {userDetails.name}!</h2>
-        </div>
-        
-        <div className="p-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-              <h3 className="text-lg font-medium mb-4">Profile Information</h3>
-              <p className="mb-2"><span className="font-medium">Name:</span> {userDetails.name}</p>
-              <p className="mb-2"><span className="font-medium">Email:</span> {userDetails.email}</p>
+    <div className="pt-[112px] bg-off-white">   
+      <div className='py-20'>
+        <div className='bg-white w-full max-w-[700px] m-auto rounded-xl shadow-sm overflow-hidden flex flex-col items-center justify-center'>
+          {/* USER POINTS */} 
+          <div className='p-6 bg-primary w-full flex flex-col items-center text-white'>
+            {userDetails.points ? (
+              <>
+                <h5>Your Points</h5>
+                <div className='text-white flex flex-row items-center justify-center gap-3'>
+                  <Puzzle strokeWidth={0} width={30} height={30} fill='#3c39c7' className='bg-off-white rounded-full p-2' />
+                  <h3 className='font-bold'>{userDetails.points} points</h3>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className='text-white flex flex-row items-center justify-center gap-3'>
+                  <h3 className='font-bold'> No Points Yet</h3>
+                </div>
+                  <Link>
+                    <Button variant="ghost2">
+                      Play Now 
+                      <ArrowRight strokeWidth={2} />
+                    </Button>
+                  </Link>
+              </>
+            )}
+          </div>
+
+          {/* USER DETAILS */}
+          <div className='w-full p-6 bg-secondary rounded-t-xl -mt-2.5 flex flex-col justify-center items-center text-white gap-2'>
+            <Avatar className='w-20 h-20'>
+              <AvatarImage src='' />
+              <AvatarFallback className='text-3xl'>
+                {userDetails.name
+                ? userDetails.name
+                    .match(/[A-Z]/g) // Extract uppercase letters (e.g., "GabrielAsis" → "GA")
+                    ?.slice(0, 2) // Take the first two letters
+                    .join('') || userDetails.name.slice(0, 2).toUpperCase() // Fallback to first two characters if no uppercase letters
+                : 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className='flex flex-col gap-0.5 text-center'>
+              <h3 className='font-medium'>{userDetails.name}</h3>
+              <p className='text-off-white/80 text-sm'>{userDetails.email}</p>
             </div>
-            
-            <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-              <h3 className="text-lg font-medium mb-4">Trivia Stats</h3>
-              
-              {userDetails.points ? (
-                <div>
-                  <div className="mb-4">
-                    <p className="text-3xl font-bold text-primary">{userDetails.points}</p>
-                    <p className="text-sm text-gray-600">Total Points</p>
-                  </div>
-                  <div className="mb-2">
-                    <p className="font-medium">Accuracy:</p>
-                    <p>
-                      {userDetails.questionsAnswered
-                        ? `${((userDetails.questionsCorrect / userDetails.questionsAnswered) * 100).toFixed(1)}%`
-                        : "N/A"}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-32">
-                  <p className="text-center mb-3">No points yet 😢</p>
-                  <p className="text-center text-sm text-gray-600">Start earning points by answering some trivia!</p>
-                  <Button 
-                    onClick={() => navigate('/play')} 
-                  >
-                    Play Trivia
-                  </Button>
-                </div>
-              )}
+            {placement &&
+              <div className='bg-off-white text-black p-1.5 px-4 rounded-full mt-6 w-full flex flex-row justify-between items-center'>
+                <div className='flex flex-row justify-between items-center gap-2'>
+                      <div className='font-medium text-white bg-primary w-6 h-6 aspect-square rounded-full flex justify-center items-center'>{placement}</div>
+                      <h5>Leaderboard Placement</h5>
+                    </div>
+                  
+                  <Link to="/leaderboard" className='flex flex-row items-center gap-2 hover:underline text-sm'>
+                    View Leaderboards <ArrowRight strokeWidth={2} size={15}/>
+                  </Link>
+              </div>
+            }
+          </div>
+
+          {/* ADDITIONAL INFO */}
+          <div className='p-6 bg-white w-full flex flex-row justify-around items-center gap-8'>
+            <div className='text-center'>
+              <h2 className='text-primary font-bold'>
+                {userDetails.questionsAnswered
+                  ? `${((userDetails.questionsCorrect / userDetails.questionsAnswered) * 100).toFixed(1)}%`
+                  : "N/A"}
+              </h2>
+              <p className='text-gray text-sm'>Accuracy score</p>
+            </div>
+            <div className='text-center'>
+              <h2 className='text-primary font-bold'>
+                {userDetails.questionsAnswered ? userDetails.questionsAnswered : "N/A"}
+              </h2>
+              <p className='text-gray text-sm'>Questions Answered</p>
+            </div>
+            <div className='text-center'>
+              <h2 className='text-primary font-bold'>
+                {userDetails.questionsCorrect ? userDetails.questionsCorrect : "N/A"}
+              </h2>
+              <p className='text-gray text-sm'>Correct Answers</p>
             </div>
           </div>
-          
-          <div className="mt-8 flex justify-end">
-            <Button 
-              onClick={handleLogout} 
-              variant="destructive"
-            >
-              Logout
-            </Button>
-          </div>
+
+          <Button variant="destructive" className="my-6" onClick={handleLogout}>
+            Logout
+            <LogOut />
+          </Button>
         </div>
-      </div>
+      </div>    
     </div>
   );
 };

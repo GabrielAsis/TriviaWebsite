@@ -30,10 +30,14 @@ function AppContent() {
   
   // List of paths where NavBar and Footer should be hidden
   const hideNavAndFooterPaths = ['/questions', '/settings'];
+
+    const coloredNavBarPaths = ['/dashboard'];
   
   // Check if the current path is in the list of paths to hide NavBar and Footer
   const shouldHideNavAndFooter = hideNavAndFooterPaths.includes(location.pathname);
-  
+
+  const shouldUseColoredNavBar = coloredNavBarPaths.includes(location.pathname);
+
   useEffect(() => {
     auth.onAuthStateChanged(user => {
       setUser(user);
@@ -42,7 +46,7 @@ function AppContent() {
   
   return (
     <>
-      {!shouldHideNavAndFooter && <NavBar />}
+      {!shouldHideNavAndFooter  && <NavBar colored={shouldUseColoredNavBar} />}
       <Toaster position='bottom-right' toastOptions={{ duration: 2000 }} />
       <Routes>
         <Route path="/" element={<Home />} exact />

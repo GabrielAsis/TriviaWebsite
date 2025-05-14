@@ -21,7 +21,7 @@ import { Menu } from 'lucide-react';
 import Login from '../../pages/Login';
 import Register from '../../pages/Register';
 
-const NavBar = () => {
+const NavBar = ({ colored = false }) => {
   const { user, setUser } = useContext(UserContext);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -91,7 +91,7 @@ const NavBar = () => {
 
   return (
     
-    <header className={`z-100 w-full sm:px-6 lg:px-8 xl:px-0 ${isColoredBgPage ? 'bg-primary fixed top-0 py-0 px-4' : 'bg-transparent fixed top-0  py-2 px-4 '} transition-all duration-500`}  id="navbar">
+    <header className={`z-100 w-full sm:px-6 lg:px-8 xl:px-0 ${colored ? 'bg-primary fixed top-0 py-0 px-4' : 'bg-transparent fixed top-0  py-2 px-4 '} transition-all duration-500`}  id="navbar">
       <div className={`mx-auto max-w-7xl flex items-center justify-between transition-all duration-500 rounded-full ${scrolled ? 'py-3 px-6 bg-primary backdrop-blur-sm border-primary ' : ' py-6'}`}>
         <div className="flex lg:flex-1">
           <Link to="/" className="flex flex-row justify-center items-center space-x-4 scale-100">

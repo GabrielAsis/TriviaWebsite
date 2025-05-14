@@ -152,7 +152,7 @@ const Settings = () => {
             <Button variant="link" className="text-primary" ><ArrowLeft strokeWidth={2}/> Back to Home</Button>
           </Link>
         </div>
-        <div className="p-8 bg-white w-[700px] m-auto rounded-xl shadow-sm">
+        <div className="p-8 bg-white w-full max-w-[700px] m-auto rounded-xl shadow-sm">
           <form onSubmit={handleSubmit} className="text-center flex flex-col gap-2">
             <div>
               <h2 className="text-2xl font-bold mb-2">{mode?.charAt(0).toUpperCase() + mode?.slice(1)} Mode</h2>
