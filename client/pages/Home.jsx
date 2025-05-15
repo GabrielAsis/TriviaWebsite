@@ -1,8 +1,16 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
 
 import { ArrowRight } from "lucide-react"
 
@@ -13,8 +21,15 @@ import { useGSAP } from "@gsap/react";
 import FadeInUp from '../src/Components/animations/FadeUp';
 gsap.registerPlugin(useGSAP);
 
+import { categoryData } from '../src/constants';
+import useAxios from '../src/hooks/useAxios';
+
+
 export default function Home() {
   const spiralRef = useRef(null)
+
+  const { response, error, loading } = useAxios({ url: "/api_category.php" });
+
 
   // GSAP Animations
   useGSAP(() => {
@@ -53,7 +68,7 @@ export default function Home() {
     })
     
   }, { scope: spiralRef })
-  
+
   return (
     <>
       {/* HERO SECTION */}
@@ -105,8 +120,81 @@ export default function Home() {
         </FadeInUp>
       </div>
 
-      {/* BENEFITS SECTION*/}
-      <div className='h-[100vh]'></div>
+      {/* CATEGORIES SECTION*/}
+      <div className='bg-off-white mt-20 md:mt-26 lg:mt-32 overflow-hidden'>
+        <div className='container py-16 md:py-22 lg:py-28 space-y-3 md:space-y-6'>
+          {/* HEADER */}
+          <div className='flex flex-col md:flex-row items-start md:justify-between md:items-center'>
+            <h2>Explore a World of Trivia Topics </h2>
+            <Link to="categories" className='flex flex-row items-center gap-2 text-primary hover:underline'>
+              See More <ArrowRight size={18} strokeWidth={2} />
+            </Link>
+          </div>
+
+          {/* CAROUSEL */}
+          <div className='relative w-full'>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              plugins={[
+                Autoplay({
+                  delay: 3000,
+                }),
+              ]}
+              className="w-full"
+            >
+              <CarouselContent>
+                {response?.trivia_categories
+                  ?.slice(0, 10) // Limit to first 8 categories
+                  .map((category) => {
+                    const categoryInfo = categoryData[category.id] || { 
+                      name: category.name,
+                      image: generalKnowledge,
+                      description: "Test your knowledge in this category"
+                    };
+
+                  return (
+                    <CarouselItem
+                      key={category.id}
+                      className="sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                    >
+                      <div
+                        className="cursor-pointer overflow-hidden flex flex-col gap-4"
+                        onClick={() => handleCategorySelect(category.id, categoryInfo.name)}
+                      >
+                        {/* IMAGE */}
+                        <div className="aspect-video w-full overflow-hidden rounded-xl">
+                          <img 
+                            src={categoryInfo.image} 
+                            alt={categoryInfo.name}
+                            className="w-full h-full object-cover transition-transform duration-300 ease-out hover:scale-105"
+                          />
+                        </div>
+
+                        {/* DETAILS */}
+                        <div className="flex flex-col">
+                          <p className="text-sm text-primary">{categoryInfo.tag}</p>
+                          <h4 className="font-medium">{categoryInfo.name}</h4>
+                          <p className="text-sm text-gray">{categoryInfo.description}</p>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  );
+                })}
+              </CarouselContent>
+              <div className="absolute inset-y-0 left-15 items-center z-10 hidden md:flex">
+                <CarouselPrevious/>
+              </div>
+
+              <div className="absolute inset-y-0 right-15 items-center z-10 hidden md:flex">
+                <CarouselNext />
+              </div>
+            </Carousel>
+          </div>
+        </div>
+      </div>
     </>
   )
 }
