@@ -43,9 +43,18 @@ function AppContent() {
       setUser(user);
     })
   }, [])
+
+  function ScrollToTop() {
+    const { pathname } = useLocation();
+    useEffect(() => {
+      window.scrollTo(0, 0);
+    }, [pathname]);
+    return null;
+  }
   
   return (
     <>
+      <ScrollToTop /> 
       {!shouldHideNavAndFooter  && <NavBar colored={shouldUseColoredNavBar} />}
       <Toaster position='bottom-right' toastOptions={{ duration: 2000 }} />
       <Routes>

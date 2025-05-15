@@ -89,7 +89,7 @@ const Modes = () => {
                     className="pointer-events-none absolute inset-0 transition-opacity duration-300"
                     style={{
                       opacity: 0.7,
-                      background: `radial-gradient(circle at ${glow.x}% ${glow.y}%, rgba(180,120,255,0.7) 0%, transparent 60%)`,
+                      background: `radial-gradient(circle at ${glow.x}% ${glow.y}%, rgba(180,120,255,0.6) 0%, transparent 60%)`,
                       zIndex: 1,
                     }}
                   />

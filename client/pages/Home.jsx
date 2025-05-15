@@ -74,7 +74,9 @@ export default function Home() {
 
               {/* BUTTON */}
               <div className='z-20 flex justify-center'>
-                <Button variant='white'>Play Now <ArrowRight strokeWidth={2} /></Button>
+                <Link to="modes">
+                  <Button variant='white'>Play Now <ArrowRight strokeWidth={2} /></Button>
+                </Link>
               </div>
             </FadeInUp>
           </div>

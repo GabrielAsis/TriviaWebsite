@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useLocation } from "react-router-dom"; // Add useLocation
+import { useNavigate, useLocation, Link } from "react-router-dom"; // Add useLocation
 import { handleAmountChange, handleScoreChange } from "../redux/actions";
 import { useEffect, useState, useContext } from "react";
 import { UserContext } from "../context/userContext";
@@ -8,6 +8,15 @@ import { UserContext } from "../context/userContext";
 import { auth, db } from "../src/Components/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+
+import Confetti from 'react-confetti';
+import { useWindowSize } from '@react-hook/window-size'; // Optional for responsive confetti
+
+import { Button } from "@/components/ui/button";
+
+import { ArrowLeft, ArrowRight, LogOut } from "lucide-react"
+
+import CountUp from 'react-countup';
 
 const FinalScore = () => {
   const dispatch = useDispatch();
@@ -28,6 +37,8 @@ const FinalScore = () => {
 
   const { amount_of_question } = useSelector((state) => state);
   
+  const [width, height] = useWindowSize();
+
   // Check if this is a valid visit to the score page
   useEffect(() => {
     // Check for a completion token in sessionStorage
@@ -211,66 +222,116 @@ const FinalScore = () => {
 
   // Display user feedback with additional invalid access message if needed
   return (
-    <div className="mt-20 text-center">
-      {!isValidVisit ? (
-        <div className="text-red-500 mb-8">
-          <h2 className="text-2xl font-bold">Unauthorized Access</h2>
-          <p>You must complete a quiz to view this page.</p>
-          <p className="text-sm mt-2">Redirecting to home page...</p>
-        </div>
-      ) : (
-        <>
-          <h2 className="text-3xl font-bold mb-5">Your Final Score: {score}</h2>
-          
-          {score > 0 && (
-            <div className="mb-5">
-              {!userDataFetched && (
-                <p className="text-gray-500">Connecting to your account...</p>
-              )}
-              
-              {userDataFetched && !currentUser && (
-                <p className="text-red-500">
-                  Please log in to save your points.
-                </p>
-              )}
-              
-              {updateStatus === "waiting" && userDataFetched && currentUser && (
-                <p className="text-gray-500">Preparing to update points...</p>
-              )}
-              
-              {updateStatus === "updating" && (
-                <p className="text-blue-500">Updating your points...</p>
-              )}
-              
+    <>
+      <div className="text-center text-white w-full flex flex-col justify-center items-center gap-8 bg-radial from-[#8F5BFF] to-primary relative pt-[130px] pb-24">
+        {!isValidVisit ? (
+          <div className="text-red-500 mb-8">
+            <h2 className="text-2xl font-bold">Unauthorized Access</h2>
+            <p>You must complete a quiz to view this page.</p>
+            <p className="text-sm mt-2">Redirecting to home page...</p>
+          </div>
+        ) : (
+          <div className="flex flex-col justify-center items-center gap-8">
+            <h2 className="">Congrats! <br /> Trivia Completed</h2>
+            <div className="w-full max-w-xs">
+              <div className="flex flex-col justify-center items-center p-6 bg-off-white text-black rounded-xl w-full max-w-xs">
+                <h1 className="text-8xl">
+                  <CountUp end={score*15} duration={1.5} />
+                </h1>
+                <p>points</p>
+              </div>
               {updateStatus === "success" && (
-                <p className="text-green-500">
-                  Successfully added {pointsAdded || (score * 15)} points to your account!
+                <p className="text-white text-sm mt-1">
+                  Points added to your account!
                 </p>
               )}
-              
-              {updateStatus === "error" && currentUser && (
-                <p className="text-red-500">
-                  Error updating points. Please try again later.
-                </p>
-              )}
-              
-              {currentUser && (
-                <p className="text-sm mt-4">
-                  Playing as: {currentUser.name} | Current Points: {currentUser.points}
-                </p>
+              {updateStatus === "updating" && (
+                <p className="text-white text-sm mt-1">Preparing to update points...</p>
               )}
             </div>
-          )}
-        </>
-      )}
-      
-      <button
-        onClick={handleBackToHome}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Back to Home
-      </button>
-    </div>
+            {score > 0 && (
+              <>
+                <Confetti 
+                  width={width} 
+                  height={height} 
+                  recycle={false} 
+                  numberOfPieces={450} 
+                  gravity={0.3}
+                />
+                <div className="flex flex-row items-center justify-center gap-10"> 
+                  <div>
+                    <h2>
+                      <CountUp end={(score / amount_of_question) * 100} duration={1.5} />
+                      %
+                    </h2>
+                    <p className="text-sm">Accuracy Score</p>
+                  </div>
+
+                  <div>
+                    <h2>
+                      <CountUp end={score} duration={1.5} /> / {amount_of_question}
+                    </h2>
+                    <p className="text-sm">Correct Answers</p>
+                  </div>
+                </div>
+                
+                {userDataFetched && !currentUser && (
+                  <p className="text-red-500">
+                    Please log in to save your points.
+                  </p>
+                )}
+
+                {updateStatus === "error" && currentUser && (
+                  <p className="text-red-500">
+                    Error updating points. Please try again later.
+                  </p>
+                )}
+
+                {/* {!userDataFetched && (
+                  <p className="text-gray-500">Connecting to your account...</p>
+                )} */}
+                
+                {/* {updateStatus === "waiting" && userDataFetched && currentUser && (
+                  <p className="text-gray-500">Preparing to update points...</p>
+                )} */}
+                
+                {/* {updateStatus === "updating" && (
+                  <p className="text-blue-500">Updating your points...</p>
+                )} */}
+                
+                {/* {updateStatus === "success" && (
+                  <p className="text-green-500">
+                    Successfully added {pointsAdded || (score * 15)} points to your account!
+                  </p>
+                )} */}
+                
+                {/* {currentUser && (
+                  <p className="text-sm mt-4">
+                    Playing as: {currentUser.name} | Current Points: {currentUser.points}
+                  </p>
+                )} */}
+              </>
+            )}
+          </div>
+        )}
+        
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={handleBackToHome}
+            variant="white"
+          >
+            Back to Home
+            <LogOut strokeWidth={2.6} />
+          </Button>
+          <Link to="/dashboard">
+            <Button variant="whiteOutline">
+              View Dashboard
+              <ArrowRight />
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </>
   );
 };
 
