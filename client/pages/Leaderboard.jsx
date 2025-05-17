@@ -98,11 +98,19 @@
                 <p className="text-off-white/80 max-w-3xl text-center mt-4">
                   Check out who’s leading the trivia challenge and see how you stack up. Compete for the top spot, earn bragging rights, and keep the grind going!
                 </p>
+              {/* SCROLLDOWN MESSAGE */}
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center z-30">
+                <span className="text-xs mb-1 text-off-white/80">Scroll Down</span>
+                <svg className="animate-bounce w-6 h-6 text-off-white/80" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
               </FadeInUp>
             </div>
           </div>
         </div>
-        <div className="max-w-3xl mx-auto py-20 flex flex-col justify-center items-center gap-6  px-4 sm:px-6 lg:px-8 xl:px-0">
+
+        <div className="max-w-3xl mx-auto pt-15 pb-20 flex flex-col justify-center items-center gap-6 px-4 sm:px-6 lg:px-8 xl:px-0">
           <div className="flex items-end justify-center gap-1 mt-10 w-full">
             {[1, 0, 2].map((podiumIdx, i) => {
               const user = users[podiumIdx];

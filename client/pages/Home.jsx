@@ -27,10 +27,13 @@ import useAxios from '../src/hooks/useAxios';
 
 import { db } from '../src/Components/firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { logo } from '../src/assets';
 
 
 export default function Home() {
   const spiralRef = useRef(null)
+  const ctaSpiralTopLeftRef = useRef(null)
+  const ctaSpiralBottomRightRef = useRef(null)
 
   const { response, error, loading } = useAxios({ url: "/api_category.php" });
 
@@ -39,41 +42,99 @@ export default function Home() {
 
   // GSAP Animations
   useGSAP(() => {
-    const tl = gsap.timeline()
-
-    // Zoom + fade in while starting the spin
-    tl.fromTo(spiralRef.current,
-      {
-        scale: 0,
-        opacity: 0,
-        rotation: 0,
-        xPercent: -50,
-        yPercent: -50,
-      },
-      {
-        scale: 1,
-        opacity: 1,
-        rotation: 45,
-        duration: 2,
-        delay: 1,
-        ease: 'circ.inOut',
+    // HERO spiral animation (unchanged)
+    if (spiralRef.current) {
+      const tl = gsap.timeline();
+      tl.fromTo(
+        spiralRef.current,
+        {
+          scale: 0,
+          opacity: 0,
+          rotation: 0,
+          xPercent: -50,
+          yPercent: -50,
+        },
+        {
+          scale: 1,
+          opacity: 1,
+          rotation: 45,
+          duration: 2,
+          delay: 1,
+          ease: 'circ.inOut',
+          transformOrigin: '50% 50%',
+          xPercent: -50,
+          yPercent: -50,
+        }
+      );
+      tl.to(spiralRef.current, {
+        rotation: '+=360',
+        duration: 60,
+        repeat: -1,
+        ease: 'none',
         transformOrigin: '50% 50%',
         xPercent: -50,
         yPercent: -50,
-      }
-    )
-    
-    tl.to(spiralRef.current, {
-      rotation: '+=360',
-      duration: 60,
-      repeat: -1,
-      ease: 'none',
-      transformOrigin: '50% 50%',
-      xPercent: -50,
-      yPercent: -50,
-    })
-    
-  }, { scope: spiralRef })
+      });
+    }
+
+    // CTA spirals fade-in from left/right on scroll
+    if (ctaSpiralTopLeftRef.current) {
+      gsap.fromTo(
+        ctaSpiralTopLeftRef.current,
+        { opacity: 0, x: -100 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 1.2,
+          ease: "circ.inOut",
+          delay: 1,
+          scrollTrigger: {
+            trigger: ctaSpiralTopLeftRef.current,
+            start: "center 80%",
+            toggleActions: "play none none none",
+            onEnter: () => console.log('Spiral animation triggered!'),
+          },
+          onStart: () => console.log('Spiral animation started after delay!'),
+          onComplete: () => {
+            gsap.to(ctaSpiralTopLeftRef.current, {
+              rotation: "+=360",
+              duration: 40,
+              repeat: -1,
+              ease: "none",
+              transformOrigin: "50% 50%",
+            });
+          }
+        }
+      );
+    }
+    if (ctaSpiralBottomRightRef.current) {
+      gsap.fromTo(
+        ctaSpiralBottomRightRef.current,
+        { opacity: 0, x: 100 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 1.2,
+          ease: "circ.inOut",
+          delay: 1,
+          scrollTrigger: {
+            trigger: ctaSpiralBottomRightRef.current,
+            start: "center 80%",
+            toggleActions: "play none none none",
+          },
+          onComplete: () => {
+            gsap.to(ctaSpiralBottomRightRef.current, {
+              rotation: "+=360",
+              duration: 40,
+              repeat: -1,
+              ease: "none",
+              transformOrigin: "50% 50%",
+            });
+          }
+        }
+      );
+    }
+  }, []);
 
    useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -99,14 +160,10 @@ export default function Home() {
   return (
     <>
       {/* HERO SECTION */}
-      <div style={{
-          backgroundRepeat: 'repeat',
-          backgroundSize: 'auto',
-        }} className='py-32 sm:py-40 md:py-50 bg-gradient-to-br from-primary to-[#8F5BFF] text-white relative overflow-hidden z-30'>
+      <div className='py-32 sm:py-40 md:py-50 bg-gradient-to-br from-primary to-[#8F5BFF] text-white relative overflow-hidden z-30'>
         <div  className='flex flex-col justify-center items-center space-y-8 h-full'>
           {/* SPIRAL IMAGE */}
           <div ref={spiralRef} className='z-10 w-[150%] md:w-[110%] h-auto absolute left-1/2 top-1/2'><img className='w-full h-auto' src="../src/assets/Spiral Shape.png" alt="" /></div>
-
 
           <div className='z-20 max-w-3xl px-4 sm:px-6 lg:px-8'>
             <FadeInUp delay={0.5} className='space-y-6'>
@@ -149,7 +206,7 @@ export default function Home() {
 
       {/* CATEGORIES SECTION*/}
       <div className='bg-off-white mt-20 md:mt-26 lg:mt-32 overflow-hidden'>
-        <div className='container py-16 md:py-22 lg:py-28 space-y-3 md:space-y-6'>
+        <FadeInUp className='container py-16 md:py-22 lg:py-28 space-y-3 md:space-y-6' triggerStart='center 50%'>
           {/* HEADER */}
           <div className='flex flex-col md:flex-row items-start md:justify-between md:items-center'>
             <h2>Explore a World of Trivia Topics </h2>
@@ -220,12 +277,12 @@ export default function Home() {
               </div>
             </Carousel>
           </div>
-        </div>
+        </FadeInUp>
       </div>  
 
       {/* LEADERBOARDS SECTION */}
       <div className='bg-white my-20 md:my-26 lg:my-32 overflow-hidden'>
-        <div className='container flex flex-col lg:flex-row items-center gap-10 lg:gap-20'>
+        <FadeInUp className='container flex flex-col lg:flex-row items-center gap-10 lg:gap-20' triggerStart='center 50%'>
           <div className='space-y-6 w-full flex-[1.25]'>
             <h2>Climb the Ranks & Prove Your Knowledge!</h2>
             <p className='text-gray'>Compete with friends and players worldwide in an exciting battle for the top spot! Showcase your knowledge, climb the leaderboard, and prove you're the best. Will you rise to the challenge and claim the number one position?</p>
@@ -236,47 +293,70 @@ export default function Home() {
             </Link> 
           </div>
 
-            <FadeInUp className='w-full flex-[1]' triggerStart='50% 50%'>
-              <div className='bg-off-white p-6 md:p-8 rounded-xl space-y-4'>
-                <h3 className='font-bold'>Leaderboard</h3>
-                {leaderLoading ? (
-                  <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center">
-                    <div className="w-18 h-18 border-8 border-t-8 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-                    <h3 className="ml-2">Loading questions...</h3>
-                  </div>
-                ) : (
-                  <div className="w-full overflow-y-hidden overflow-x-auto custom-scrollbar">
-                    <div className="min-w-[400px] flex flex-col">
-                      {/* Header */}
-                      <div className="flex py-2 border-b-3 border-primary">
-                        <div className="w-[25%] text-left text-gray uppercase text-sm">Rank</div>
-                        <div className="w-[60%] text-left text-gray uppercase text-sm">Name</div>
-                        <div className="w-[15%] text-right text-gray uppercase text-sm">Points</div>
-                      </div>
+          <div className='w-full flex-[1]' triggerStart='50% 50%'>
+            <div className='bg-off-white p-6 md:p-8 rounded-xl space-y-4'>
+              <h3 className='font-bold'>Leaderboard</h3>
+              {leaderLoading ? (
+                <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center">
+                  <div className="w-18 h-18 border-8 border-t-8 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+                  <h3 className="ml-2">Loading questions...</h3>
+                </div>
+              ) : (
+                <div className="w-full overflow-y-hidden overflow-x-auto custom-scrollbar">
+                  <div className="min-w-[400px] flex flex-col">
+                    {/* Header */}
+                    <div className="flex py-2 border-b-3 border-primary">
+                      <div className="w-[25%] text-left text-gray uppercase text-sm">Rank</div>
+                      <div className="w-[60%] text-left text-gray uppercase text-sm">Name</div>
+                      <div className="w-[15%] text-right text-gray uppercase text-sm">Points</div>
+                    </div>
 
-                      {/* Rows */}
-                      <div className="flex flex-col max-h-[400px] overflow-y-auto custom-scrollbar">
-                        {users.map((user, idx) => (
-                          <div
-                            key={user.id}
-                            className="flex py-6 border-b-1 border-primary/40"
-                          >
-                            <p className="w-[25%] font-medium">{idx + 1}</p>
-                            <p className="w-[60%] font-medium">{user.name || 'Unknown'}</p>
-                            <p className="w-[15%] font-medium text-right text-primary">{user.points || 0}</p>
-                          </div>
-                        ))}
-                      </div>
+                    {/* Rows */}
+                    <div className="flex flex-col max-h-[400px] overflow-y-auto custom-scrollbar">
+                      {users.map((user, idx) => (
+                        <div
+                          key={user.id}
+                          className="flex py-6 border-b-1 border-primary/40"
+                        >
+                          <p className="w-[25%] font-medium">{idx + 1}</p>
+                          <p className="w-[60%] font-medium">{user.name || 'Unknown'}</p>
+                          <p className="w-[15%] font-medium text-right text-primary">{user.points || 0}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
+                </div>
 
-                )}
-              </div>
-            </FadeInUp>
-        </div>
+              )}
+            </div>
+          </div>
+        </FadeInUp>
       </div>
 
-      
+      {/* CTA SECTION */}
+      <div className='bg-gradient-to-tl from-primary to-[#8F5BFF] relative overflow-hidden'>
+        {/* Spiral Top Left */}
+        <div ref={ctaSpiralTopLeftRef} className='z-10 w-[42vw] h-auto absolute -top-70 -left-70 pointer-events-none'>
+          <img className='w-full h-auto' src="../src/assets/Jagged.png" alt="" />
+        </div>
+        {/* Spiral Bottom Right */}
+        <div ref={ctaSpiralBottomRightRef} className='z-10 w-[42vw] h-auto absolute -bottom-70 -right-70 pointer-events-none'>
+          <img className='w-full h-auto' src="../src/assets/Hedgehog.png" alt="" />
+        </div>
+
+        {/* CONTAINER */}
+        <FadeInUp className='container py-16 md:py-22 lg:py-28 space-y-4 md:space-y-5 text-white text-center flex flex-col justify-center items-center relative z-20' triggerStart='center 50%' stagger={0.5}>
+          <img className='w-22' src={logo} alt="" />
+          <h2>Think you got what it takes?</h2>
+          <p className='text-off-white/80 max-w-4xl'>Dive into exciting trivia challenges, test your knowledge across different categories, and climb the leaderboard. Whether you’re here for fun or to prove you're the ultimate trivia master, there’s always a challenge waiting for you!</p>
+          <Link to="/modes">
+            <Button variant="white">
+              Start Playing Now
+              <ArrowRight strokeWidth={2}/>
+            </Button>
+          </Link>
+        </FadeInUp>
+      </div>
     </>
   )
 }
