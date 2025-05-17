@@ -1,6 +1,7 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+// shadcd UI
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import {
@@ -24,12 +25,17 @@ gsap.registerPlugin(useGSAP);
 import { categoryData } from '../src/constants';
 import useAxios from '../src/hooks/useAxios';
 
+import { db } from '../src/Components/firebase';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+
 
 export default function Home() {
   const spiralRef = useRef(null)
 
   const { response, error, loading } = useAxios({ url: "/api_category.php" });
 
+  const [users, setUsers] = useState([]);
+  const [leaderLoading, setleaderLoading] = useState(true);
 
   // GSAP Animations
   useGSAP(() => {
@@ -68,6 +74,27 @@ export default function Home() {
     })
     
   }, { scope: spiralRef })
+
+   useEffect(() => {
+    const fetchLeaderboard = async () => {
+      setleaderLoading(true);
+      try {
+        const usersRef = collection(db, 'Users');
+        const q = query(usersRef, orderBy('points', 'desc'));
+        const querySnapshot = await getDocs(q);
+        const usersList = [];
+        querySnapshot.forEach((doc) => {
+          usersList.push({ id: doc.id, ...doc.data() });
+        });
+        setUsers(usersList);
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+      }
+      setleaderLoading(false);
+    };
+
+    fetchLeaderboard();
+  }, []);
 
   return (
     <>
@@ -194,7 +221,62 @@ export default function Home() {
             </Carousel>
           </div>
         </div>
+      </div>  
+
+      {/* LEADERBOARDS SECTION */}
+      <div className='bg-white my-20 md:my-26 lg:my-32 overflow-hidden'>
+        <div className='container flex flex-col lg:flex-row items-center gap-10 lg:gap-20'>
+          <div className='space-y-6 w-full flex-[1.25]'>
+            <h2>Climb the Ranks & Prove Your Knowledge!</h2>
+            <p className='text-gray'>Compete with friends and players worldwide in an exciting battle for the top spot! Showcase your knowledge, climb the leaderboard, and prove you're the best. Will you rise to the challenge and claim the number one position?</p>
+            <Link to="/leaderboard">
+                <Button>
+                  View Leaderboards <ArrowRight strokeWidth={2}/>
+                </Button>
+            </Link> 
+          </div>
+
+            <FadeInUp className='w-full flex-[1]' triggerStart='50% 50%'>
+              <div className='bg-off-white p-6 md:p-8 rounded-xl space-y-4'>
+                <h3 className='font-bold'>Leaderboard</h3>
+                {leaderLoading ? (
+                  <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center">
+                    <div className="w-18 h-18 border-8 border-t-8 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+                    <h3 className="ml-2">Loading questions...</h3>
+                  </div>
+                ) : (
+                  <div className="w-full overflow-y-hidden overflow-x-auto custom-scrollbar">
+                    <div className="min-w-[400px] flex flex-col">
+                      {/* Header */}
+                      <div className="flex py-2 border-b-3 border-primary">
+                        <div className="w-[25%] text-left text-gray uppercase text-sm">Rank</div>
+                        <div className="w-[60%] text-left text-gray uppercase text-sm">Name</div>
+                        <div className="w-[15%] text-right text-gray uppercase text-sm">Points</div>
+                      </div>
+
+                      {/* Rows */}
+                      <div className="flex flex-col max-h-[400px] overflow-y-auto custom-scrollbar">
+                        {users.map((user, idx) => (
+                          <div
+                            key={user.id}
+                            className="flex py-6 border-b-1 border-primary/40"
+                          >
+                            <p className="w-[25%] font-medium">{idx + 1}</p>
+                            <p className="w-[60%] font-medium">{user.name || 'Unknown'}</p>
+                            <p className="w-[15%] font-medium text-right text-primary">{user.points || 0}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                )}
+              </div>
+            </FadeInUp>
+        </div>
       </div>
+
+      
     </>
   )
 }
