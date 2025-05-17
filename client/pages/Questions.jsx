@@ -13,12 +13,13 @@ import {
 } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import toast from 'react-hot-toast'; // Import react-hot-toast
 
 // assets imports
 import { thinkingAvatar, endlessPng, blitzPng } from "../src/assets";
 
 // icons
-import { ArrowLeft, ArrowRight, Heart, HeartCrack, HeartOff } from "lucide-react";  
+import { ArrowLeft, ArrowRight, Heart, HeartCrack, HeartOff, Check, X } from "lucide-react";  
 
 // number randomizer
 const getRandomInt = (max) =>
@@ -46,6 +47,7 @@ const Questions = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  // No longer need toast hook
 
   // Store options for each question separately
   const [allOptions, setAllOptions] = useState([]);
@@ -74,32 +76,20 @@ const Questions = () => {
 
   const [lives, setLives] = useState(isEndless ? 3 : isStrike ? 1 : null);
 
+  // NEW: Add a state to track if we're in the "review answer" state
+  const [reviewingAnswer, setReviewingAnswer] = useState(false);
+
+  useEffect(() => {
+    // Reset score when this component mounts (new game)
+    dispatch(handleScoreChange(0));
+  }, [dispatch]);
+
   // Define handleFinish near the top to avoid reference issues
   const handleFinish = useCallback(() => {
-    // Make sure questions have loaded and we have a valid questionIndex
-    if (!questions.length || !questions[questionIndex]) return;
-    
-    const correct = decode(questions[questionIndex].correct_answer);
-    const selected = selectedAnswers[questionIndex];
-  
-    // Only score if not already scored
-    if (!scoredQuestions.includes(questionIndex)) {
-      const isCorrect = selected === correct;
-      setAnswerResults((prev) => {
-        const updated = [...prev];
-        updated[questionIndex] = isCorrect;
-        return updated;
-      });
-  
-      if (isCorrect) {
-        dispatch(handleScoreChange(score + 1));
-      }
-  
-      setScoredQuestions([...scoredQuestions, questionIndex]);
-    }
-  
-    navigate("/score", { state: { fromQuestions: true } });
-  }, [questions, questionIndex, selectedAnswers, scoredQuestions, dispatch, score, navigate]);
+    // This function is no longer used - all navigation is handled in handleContinueAfterReview
+    // Keeping it as a placeholder in case we need to revisit
+    console.log("handleFinish called - this is deprecated");
+  }, []);
   
   // Get the selected option for the current question
   const selectedOption = selectedAnswers[questionIndex] || "";
@@ -254,13 +244,19 @@ const Questions = () => {
     setSelectedAnswers(updatedAnswers);
   };
 
-  // submits answer & moves to next question
   const handleNext = async () => {
     if (!questions[questionIndex]) {
       console.error("No question found at index:", questionIndex);
       return;
     }
 
+    // If we're already reviewing an answer, this is the "Continue" button click
+    if (reviewingAnswer) {
+      handleContinueAfterReview();
+      return;
+    }
+
+    // Otherwise, this is the first click to check the answer
     const correct = decode(questions[questionIndex].correct_answer);
     const selected = selectedAnswers[questionIndex];
 
@@ -275,22 +271,36 @@ const Questions = () => {
 
       if (isCorrect) {
         dispatch(handleScoreChange(score + 1));
-      } else if ((isEndless || isStrike) && lives > 0) {
-        // Deduct a life if the answer is wrong in endless or strike mode
-        setLives((prevLives) => {
-          const newLives = prevLives - 1;
-          if (newLives <= 0) {
-            // Trigger finish if no lives are left after a short delay
-            // to allow state updates to complete
-            setTimeout(() => handleFinish(), 100);
-          }
-          return newLives;
-        });
+        // Show toast for correct answer
+        toast.success("Correct! Well done!");
+      } else {
+        // Show toast for incorrect answer
+        toast.error(`Incorrect Answer 🥀`);
+        
+        // Deduct a life in endless or strike mode
+        if ((isEndless || isStrike) && lives > 0) {
+          setLives((prevLives) => {
+            const newLives = prevLives - 1;
+            if (newLives <= 0) {
+              // Don't navigate immediately, let them see the incorrect answer first
+              // We'll navigate in handleContinueAfterReview instead
+            }
+            return newLives;
+          });
+        }
       }
 
       setScoredQuestions([...scoredQuestions, questionIndex]);
+      
+      // Enter review mode to show the correct/incorrect answer
+      setReviewingAnswer(true);
     }
+  };
 
+  // NEW: Continue to the next question after reviewing the answer
+  const handleContinueAfterReview = async () => {
+    setReviewingAnswer(false);
+    
     // Logic for different modes
     if (isEndless) {
       // Check if we need more questions
@@ -302,7 +312,7 @@ const Questions = () => {
           setQuestions((prev) => [...prev, ...newQuestions]);
         } else {
           console.log("Failed to fetch more questions, ending game");
-          handleFinish();
+          navigate("/score", { state: { fromQuestions: true } });
           return;
         }
       }
@@ -311,21 +321,24 @@ const Questions = () => {
       if (lives > 0) {
         setQuestionIndex((idx) => idx + 1);
       } else {
-        handleFinish();
+        navigate("/score", { state: { fromQuestions: true } });
       }
     } else if (isStrike) {
+      const correct = decode(questions[questionIndex].correct_answer);
+      const selected = selectedAnswers[questionIndex];
+      
       // In strike mode, only advance if answer is correct
       if (selected === correct) {
         if (questionIndex + 1 < questions.length) {
           setQuestionIndex((idx) => idx + 1);
         } else {
           // Last question answered correctly
-          handleFinish();
+          navigate("/score", { state: { fromQuestions: true } });
         }
       } else {
         // Wrong answer in strike mode
         if (lives <= 0) {
-          handleFinish();
+          navigate("/score", { state: { fromQuestions: true } });
         }
       }
     } else {
@@ -338,7 +351,6 @@ const Questions = () => {
       }
     }
   };
-
 
   const fetchMoreQuestions = async () => {
     console.log("Fetching more questions for endless mode");
@@ -379,12 +391,7 @@ const Questions = () => {
   return (
     <div className="w-[100vw] md:h-[100vh] flex flex-col md:flex-row gap-0">
       {/* LEFT COLUMN - QUESTION*/}
-      <div className="flex-1 h-full flex flex-col justify-between px-4 py-8 md:px-8 md:py-12 xl:px-24 xl:py-20 rounded-bl-2xl rounded-br-2xl md:rounded-tr-2xl md:rounded-bl-none overflow-hidden relative" 
-      style={{
-        backgroundImage: `radial-gradient(circle at center, rgba(60, 57, 199, 0.9) 0%, rgba(60, 57, 199, 0.95) 100%), url(${blitzPng})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}>
+      <div className="bg-gradient-to-br from-primary to-[#8F5BFF] flex-1 h-full flex flex-col justify-between px-4 py-8 md:px-8 md:py-12 xl:px-24 xl:py-20 rounded-bl-2xl rounded-br-2xl md:rounded-tr-2xl md:rounded-bl-none overflow-hidden relative">
         <Link to="/">
           <Button variant="link" className="text-off-white" ><ArrowLeft strokeWidth={2}/> Exit to Home</Button>
         </Link>
@@ -416,8 +423,6 @@ const Questions = () => {
           <h2 className="">
             {decode(questions[questionIndex].question)}
           </h2>
-
-          <p className="text-off-white/75 font-medium">Select One Answer</p>
         </div>
 
         <div className="text-off-white">
@@ -449,7 +454,7 @@ const Questions = () => {
             let extraInfo = "";
             let extraClass = "";
 
-            if (isScored) {
+            if (isScored && reviewingAnswer) {
               if (isCorrectAnswer) {
                 extraInfo = "✅ Correct";
                 extraClass = "text-green-600 font-semibold";
@@ -464,20 +469,24 @@ const Questions = () => {
                 key={i}
                 htmlFor={id}
                 className={`flex items-center space-x-2 border-primary border-3 rounded-full px-2 py-2 w-full cursor-pointer ${
-                  isScored ? "opacity-80" : ""
+                  isScored && reviewingAnswer ? "opacity-80" : ""
+                } ${
+                  reviewingAnswer && isCorrectAnswer ? "bg-green-100/20" : ""
+                } ${
+                  reviewingAnswer && isSelected && !isCorrectAnswer ? "bg-red-100/20" : ""
                 }`}
               >
                 <RadioGroupItem
                   value={decoded}
                   id={id}
-                  disabled={isScored}
+                  disabled={reviewingAnswer}
                 />
                 <Label
                   htmlFor={id}
                   className={`${extraClass} text-sm md:text-md lg:text-lg text-primary font-bold`}
                 >
                   {decoded}
-                  {extraInfo && <span>{extraInfo}</span>}
+                  {extraInfo && <span className="ml-2">{extraInfo}</span>}
                 </Label>
               </label>
             );
@@ -486,21 +495,28 @@ const Questions = () => {
           
         {/* NEXT & PREV BUTTONS */}
         <div className="flex flex-row justify-center items-center space-x-2">
-          {/* prev */}
+          {/* prev button - disabled during review */}
           <Button
             variant="outline"
             onClick={handlePrev}
-            disabled={questionIndex === 0}
+            disabled={questionIndex === 0 || reviewingAnswer}
           >
           <ArrowLeft strokeWidth={2}/>  Previous
           </Button>
 
-          {/* next */}
+          {/* MODIFIED: Next/Check/Continue button based on state */}
           <Button
             onClick={handleNext}
             disabled={!selectedOption}
           >
-            {isEndless ? "Next" : questionIndex + 1 === questions.length ? "Finish" : "Next"} <ArrowRight strokeWidth={2}/>
+            {(selectedAnswers[questionIndex] && !scoredQuestions.includes(questionIndex))
+              ? "Check Answer"
+              : isEndless 
+                ? "Next" 
+                : questionIndex + 1 === questions.length 
+                  ? "Finish" 
+                  : "Next"} 
+            <ArrowRight strokeWidth={2} className="ml-1"/>
           </Button>
         </div>
       </div>
