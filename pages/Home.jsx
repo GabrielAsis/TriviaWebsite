@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 // shadcd UI
-import { Button } from "@/components/ui/button"
+import { Button } from "@/Components/ui/button" 
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import {
   Carousel,
