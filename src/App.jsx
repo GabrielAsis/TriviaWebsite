@@ -13,8 +13,8 @@ import Leaderboard from '../pages/Leaderboard';
 import Modes from '../pages/Modes'
 
 // import components
-import NavBar from "./Components/NavBar";
-import Footer from "./Components/Footer"
+import NavBar from "./components/NavBar";
+import Footer from "./components/Footer"
 
 import axios from 'axios';
 import { Toaster } from 'react-hot-toast';
