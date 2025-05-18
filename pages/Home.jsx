@@ -90,7 +90,6 @@ export default function Home() {
           scrollTrigger: {
             trigger: ctaSpiralTopLeftRef.current,
             start: "70% 80%",
-            markers: true,
             toggleActions: "play none none none",
             onEnter: () => console.log('Spiral animation triggered!'),
           },
@@ -120,7 +119,6 @@ export default function Home() {
             trigger: ctaSpiralBottomRightRef.current,
             start: "top 80%",
             toggleActions: "play none none none",
-            markers: true,
           },
           onComplete: () => {
             gsap.to(ctaSpiralBottomRightRef.current, {
