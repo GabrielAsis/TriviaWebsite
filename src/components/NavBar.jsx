@@ -21,6 +21,8 @@ import { Menu } from 'lucide-react';
 import Login from '../../pages/Login';
 import Register from '../../pages/Register';
 
+import { logo } from '../src/assets';
+
 const NavBar = ({ colored = false }) => {
   const { user, setUser } = useContext(UserContext);
   const [open, setOpen] = useState(false);
@@ -97,7 +99,7 @@ const NavBar = ({ colored = false }) => {
           <Link to="/" className="flex flex-row justify-center items-center space-x-4 scale-100">
             <img
               alt="Logo"
-              src="../../src/assets/Trivio Logo Icon.png"
+              src={logo}
               className={`w-auto transition-all duration-500 ${scrolled ? 'h-11' : 'h-16'}`}
             />
             <h2 className={`text-white transition-all duration-500 ${scrolled ? 'text-[1.5rem]' : 'text-2rem'}`}>Trivio</h2>
