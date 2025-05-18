@@ -21,7 +21,7 @@ import { Menu } from 'lucide-react';
 import Login from '../../pages/Login';
 import Register from '../../pages/Register';
 
-import { logo } from '../src/assets';
+import { logo } from '../assets';
 
 const NavBar = ({ colored = false }) => {
   const { user, setUser } = useContext(UserContext);
