@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import SelectField from "../src/Components/SelectField";
-import BoxRadioField from "../src/Components/BoxRadioField";
-import TextFieldComp from "../src/Components/TextFieldComp";
+import SelectField from "../src/components/SelectField";
+import BoxRadioField from "../src/components/BoxRadioField";
+import TextFieldComp from "../src/components/TextFieldComp";
 import useAxios from "../src/hooks/useAxios";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";

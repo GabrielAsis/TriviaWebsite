@@ -5,7 +5,7 @@ import { useEffect, useState, useContext } from "react";
 import { UserContext } from "../context/userContext";
 
 // Firebase imports
-import { auth, db } from "../src/Components/firebase";
+import { auth, db } from "../src/components/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 

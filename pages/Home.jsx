@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 // shadcd UI
-import { Button } from "@/Components/ui/button" 
+import { Button } from "@/components/ui/button" 
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import {
   Carousel,
@@ -19,13 +19,13 @@ import { modes } from "../src/constants"
 
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import FadeInUp from '../src/Components/animations/FadeUp';
+import FadeInUp from '../src/components/animations/FadeUp';
 gsap.registerPlugin(useGSAP);
 
 import { categoryData } from '../src/constants';
 import useAxios from '../src/hooks/useAxios';
 
-import { db } from '../src/Components/firebase';
+import { db } from '../src/components/firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { logo } from '../src/assets';
 
