@@ -336,16 +336,16 @@ export default function Home() {
       {/* CTA SECTION */}
       <div className='bg-gradient-to-tl from-primary to-[#8F5BFF] relative overflow-hidden'>
         {/* Spiral Top Left */}
-        <div ref={ctaSpiralTopLeftRef} className='z-10 w-[42vw] h-auto absolute -top-70 -left-70 pointer-events-none'>
+        <div ref={ctaSpiralTopLeftRef} className='z-10 w-[65vw] sm:w-[55vw] lg:w-[42vw] h-auto absolute -top-[20%] -left-[15%] sm:-top-[30%] sm:-left-[25%] lg:-top-70 lg:-left-70 pointer-events-none'>
           <img className='w-full h-auto' src="../src/assets/Jagged.png" alt="" />
         </div>
         {/* Spiral Bottom Right */}
-        <div ref={ctaSpiralBottomRightRef} className='z-10 w-[42vw] h-auto absolute -bottom-70 -right-70 pointer-events-none'>
+        <div ref={ctaSpiralBottomRightRef} className='z-10 w-[65vw] sm:w-[55vw] lg:w-[42vw] h-auto absolute -bottom-[20%] -right-[15%] sm:-bottom-[30%] sm:-right-[25%] lg:-bottom-70 lg:-right-70 pointer-events-none'>
           <img className='w-full h-auto' src="../src/assets/Hedgehog.png" alt="" />
         </div>
 
         {/* CONTAINER */}
-        <FadeInUp className='container py-16 md:py-22 lg:py-28 space-y-4 md:space-y-5 text-white text-center flex flex-col justify-center items-center relative z-20' triggerStart='center 50%' stagger={0.5}>
+        <FadeInUp className='container py-16 md:py-22 lg:py-28 space-y-4 md:space-y-5 text-white text-center flex flex-col justify-center items-center relative z-20' triggerStart='20% 50%' stagger={0.5}>
           <img className='w-22' src={logo} alt="" />
           <h2>Think you got what it takes?</h2>
           <p className='text-off-white/80 max-w-4xl'>Dive into exciting trivia challenges, test your knowledge across different categories, and climb the leaderboard. Whether you’re here for fun or to prove you're the ultimate trivia master, there’s always a challenge waiting for you!</p>

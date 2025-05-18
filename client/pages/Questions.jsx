@@ -5,6 +5,7 @@ import { handleScoreChange } from "../redux/actions";
 import { decode } from "html-entities";
 import axios from "axios";
 import { Link } from 'react-router-dom'
+import gsap from 'gsap'; // Import GSAP for animations
 
 // your Shadcn imports
 import {
@@ -16,7 +17,19 @@ import { Button } from "@/components/ui/button";
 import toast from 'react-hot-toast'; // Import react-hot-toast
 
 // assets imports
-import { thinkingAvatar, endlessPng, blitzPng } from "../src/assets";
+import { 
+  thinkingAvatar1, 
+  thinkingAvatar2, 
+  thinkingAvatar3, 
+  thinkingAvatar4, 
+  thinkingAvatar5, 
+  thinkingAvatar6, 
+  thinkingAvatar7, 
+  thinkingAvatar8, 
+  thinkingAvatar9, 
+  endlessPng, 
+  blitzPng 
+} from "../src/assets";
 
 // icons
 import { ArrowLeft, ArrowRight, Heart, HeartCrack, HeartOff, Check, X } from "lucide-react";  
@@ -24,6 +37,22 @@ import { ArrowLeft, ArrowRight, Heart, HeartCrack, HeartOff, Check, X } from "lu
 // number randomizer
 const getRandomInt = (max) =>
   Math.floor(Math.random() * Math.floor(max));
+
+// Create an array of all thinking avatars for random selection
+const thinkingAvatars = [
+  thinkingAvatar1,
+  thinkingAvatar2,
+  thinkingAvatar3,
+  thinkingAvatar4,
+  thinkingAvatar5,
+  thinkingAvatar6,
+  thinkingAvatar7,
+  thinkingAvatar8,
+  thinkingAvatar9
+];
+
+// Function to get a random avatar
+const getRandomAvatar = () => thinkingAvatars[getRandomInt(thinkingAvatars.length)];
 
 const Questions = () => {
   const location = useLocation();
@@ -47,7 +76,13 @@ const Questions = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // No longer need toast hook
+
+  // Refs for GSAP animations
+  const questionContainerRef = useRef(null);
+  const optionsContainerRef = useRef(null);
+  const avatarRef = useRef(null);
+  // Individual option refs - stored by index
+  const optionRefs = useRef({});
 
   // Store options for each question separately
   const [allOptions, setAllOptions] = useState([]);
@@ -61,6 +96,9 @@ const Questions = () => {
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [scoredQuestions, setScoredQuestions] = useState([]);
   const [answerResults, setAnswerResults] = useState([]);
+  
+  // Add state for the current avatar
+  const [currentAvatar, setCurrentAvatar] = useState(() => getRandomAvatar());
   
   // Timer states - use default from URL parameter or 60 seconds
   const [timer, setTimer] = useState(isBlitz ? defaultTimer : 0);
@@ -76,13 +114,140 @@ const Questions = () => {
 
   const [lives, setLives] = useState(isEndless ? 3 : isStrike ? 1 : null);
 
+  // Animation state to prevent double transitions
+  const [isAnimating, setIsAnimating] = useState(false);
+
   // NEW: Add a state to track if we're in the "review answer" state
   const [reviewingAnswer, setReviewingAnswer] = useState(false);
+
+  // GSAP animation function to fade out content when moving between questions
+  const animateQuestionTransitionOut = useCallback(() => {
+    setIsAnimating(true);
+    
+    // Create a GSAP timeline for coordinated animations
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setIsAnimating(false);
+        // Set a new random avatar after fade out completes
+        setCurrentAvatar(getRandomAvatar());
+      }
+    });
+    
+    // Fade out the question, options, and avatar
+    tl.to(questionContainerRef.current, {
+      opacity: 0,
+      y: -20,
+      duration: 0.4,
+      ease: "power2.out"
+    }, 0);
+    
+    tl.to(optionsContainerRef.current, {
+      opacity: 0,
+      y: -20, 
+      duration: 0.4,
+      ease: "power2.out"
+    }, 0.1);
+    
+    tl.to(avatarRef.current, {
+      opacity: 0,
+      scale: 0.95,
+      duration: 0.3,
+      ease: "power2.out"
+    }, 0);
+    
+    return tl;
+  }, []);
+
+  // GSAP animation function to fade in content for a new question
+  const animateQuestionTransitionIn = useCallback(() => {
+    // Reset positions first
+    gsap.set([questionContainerRef.current, optionsContainerRef.current], {
+      opacity: 0,
+      y: 20
+    });
+    
+    gsap.set(avatarRef.current, {
+      opacity: 0,
+      scale: 0.95
+    });
+    
+    // Create animation timeline
+    const tl = gsap.timeline();
+    
+    // Fade in the question, options, and avatar
+    tl.to(questionContainerRef.current, {
+      opacity: 1,
+      y: 0,
+      duration: 0.5,
+      ease: "power2.out"
+    }, 0);
+    
+    tl.to(optionsContainerRef.current, {
+      opacity: 1,
+      y: 0,
+      duration: 0.5,
+      ease: "power2.out"
+    }, 0.1);
+    
+    tl.to(avatarRef.current, {
+      opacity: 1,
+      scale: 1,
+      duration: 0.4,
+      ease: "power2.out"
+    }, 0.05);
+    
+    return tl;
+  }, []);
+
+  // New animation: Shake the incorrect answer
+  const animateIncorrectAnswer = useCallback((optionElement) => {
+    if (!optionElement) return;
+    
+    // Create a shake animation
+    gsap.to(optionElement, {
+        keyframes: {
+        rotation: [6,-5, 3,-2, 0]
+      },
+      duration: 1,
+      ease: "power2.out",
+    });
+  }, []);
+
+  // New animation: Bounce the correct answer
+  const animateCorrectAnswer = useCallback((optionElement) => {
+    if (!optionElement) return;
+    
+    // Create a timeline for the bounce animation
+    const tl = gsap.timeline();
+    
+    // First bounce up with a scale increase
+    tl.to(optionElement, {
+      y: -10,
+      scale: 1.05,
+      duration: 0.2,
+      ease: "power2.out"
+    });
+    
+    // Then bounce back with a nice spring effect
+    tl.to(optionElement, {
+      y: 0,
+      scale: 1,
+      duration: 0.7,
+      ease: "elastic.out(1.2, 0.5)" // Spring-like easing
+    });
+    
+    return tl;
+  }, []);
 
   useEffect(() => {
     // Reset score when this component mounts (new game)
     dispatch(handleScoreChange(0));
-  }, [dispatch]);
+    
+    // Fade in the first question when component mounts
+    if (questions.length > 0 && !loading) {
+      animateQuestionTransitionIn();
+    }
+  }, [dispatch, questions, loading, animateQuestionTransitionIn]);
 
   // Define handleFinish near the top to avoid reference issues
   const handleFinish = useCallback(() => {
@@ -173,7 +338,7 @@ const Questions = () => {
     }
     
     return fetchedQuestions;
-  }, [amount_of_question, question_category, question_difficulty, question_type, queryParams]);
+  }, [amount_of_question, question_category, question_difficulty, question_type, queryParams, questions.length]);
 
   
   // Cleanup function to stop retries when unmounting
@@ -189,7 +354,7 @@ const Questions = () => {
     if (questions.length === 0) {
       fetchQuestionsWithRetry();
     }
-  }, [fetchQuestionsWithRetry]);
+  }, [fetchQuestionsWithRetry, questions.length]);
 
   // build and shuffle options when questionIndex or questions change
   useEffect(() => {
@@ -208,7 +373,12 @@ const Questions = () => {
     } else {
       setOptions(allOptions[questionIndex]);
     }
-  }, [questions, questionIndex, allOptions]);
+    
+    // Animate in the new question if not the initial load
+    if (!loading && questions.length > 0) {
+      animateQuestionTransitionIn();
+    }
+  }, [questions, questionIndex, allOptions, loading, animateQuestionTransitionIn]);
   
   // Timer effect - only runs in blitz mode
   useEffect(() => {
@@ -227,10 +397,15 @@ const Questions = () => {
       console.log("Timer reached zero, ending game");
       // Trigger game over
       setIsGameOver(true);
-      // Navigate to score with a state indicator that we came from questions
-      navigate("/score", { state: { fromQuestions: true } });
+      
+      // Animate out content before navigating
+      const tl = animateQuestionTransitionOut();
+      tl.then(() => {
+        // Navigate to score with a state indicator that we came from questions
+        navigate("/score", { state: { fromQuestions: true } });
+      });
     }
-  }, [timer, isGameOver, isBlitz, questions.length, timerStarted, navigate]);
+  }, [timer, isGameOver, isBlitz, questions.length, timerStarted, navigate, animateQuestionTransitionOut]);
   
   // stores selected radio button value
   const handleValueChange = (value) => {
@@ -245,6 +420,9 @@ const Questions = () => {
   };
 
   const handleNext = async () => {
+    // Prevent multiple clicks during animation
+    if (isAnimating) return;
+    
     if (!questions[questionIndex]) {
       console.error("No question found at index:", questionIndex);
       return;
@@ -269,22 +447,33 @@ const Questions = () => {
         return updated;
       });
 
+      // Find correct option index and selected option index
+      const selectedIndex = options.findIndex(opt => decode(opt) === selected);
+      const correctIndex = options.findIndex(opt => decode(opt) === correct);
+      
+      // Get DOM elements for the selected and correct options
+      const selectedElement = optionRefs.current[selectedIndex];
+      const correctElement = optionRefs.current[correctIndex];
+      
       if (isCorrect) {
+        // If correct, animate the selected option (which is also the correct one)
+        animateCorrectAnswer(selectedElement);
         dispatch(handleScoreChange(score + 1));
-        // Show toast for correct answer
         toast.success("Correct! Well done!");
       } else {
-        // Show toast for incorrect answer
+        // If incorrect, shake the selected option and then bounce the correct one
+        animateIncorrectAnswer(selectedElement);
+        // Wait a short moment before showing the correct answer
+        setTimeout(() => {
+          animateCorrectAnswer(correctElement);
+        }, 600);
+        
         toast.error(`Incorrect Answer 🥀`);
         
         // Deduct a life in endless or strike mode
         if ((isEndless || isStrike) && lives > 0) {
           setLives((prevLives) => {
             const newLives = prevLives - 1;
-            if (newLives <= 0) {
-              // Don't navigate immediately, let them see the incorrect answer first
-              // We'll navigate in handleContinueAfterReview instead
-            }
             return newLives;
           });
         }
@@ -292,64 +481,73 @@ const Questions = () => {
 
       setScoredQuestions([...scoredQuestions, questionIndex]);
       
-      // Enter review mode to show the correct/incorrect answer
+      // Immediately enter review mode without animation
       setReviewingAnswer(true);
     }
   };
 
   // NEW: Continue to the next question after reviewing the answer
   const handleContinueAfterReview = async () => {
-    setReviewingAnswer(false);
+    // Prevent multiple clicks during animation
+    if (isAnimating) return;
     
-    // Logic for different modes
-    if (isEndless) {
-      // Check if we need more questions
-      if (questionIndex + 1 >= questions.length) {
-        console.log("Reached end of questions, fetching more...");
-        const newQuestions = await fetchMoreQuestions();
-        if (newQuestions && newQuestions.length > 0) {
-          console.log("Adding", newQuestions.length, "new questions");
-          setQuestions((prev) => [...prev, ...newQuestions]);
-        } else {
-          console.log("Failed to fetch more questions, ending game");
-          navigate("/score", { state: { fromQuestions: true } });
-          return;
+    // Start fade out animation for question transition
+    const tl = animateQuestionTransitionOut();
+    
+    // Wait for animation to complete before changing state
+    tl.then(async () => {
+      setReviewingAnswer(false);
+      
+      // Logic for different modes
+      if (isEndless) {
+        // Check if we need more questions
+        if (questionIndex + 1 >= questions.length) {
+          console.log("Reached end of questions, fetching more...");
+          const newQuestions = await fetchMoreQuestions();
+          if (newQuestions && newQuestions.length > 0) {
+            console.log("Adding", newQuestions.length, "new questions");
+            setQuestions((prev) => [...prev, ...newQuestions]);
+          } else {
+            console.log("Failed to fetch more questions, ending game");
+            navigate("/score", { state: { fromQuestions: true } });
+            return;
+          }
         }
-      }
-      
-      // Only advance if we have lives left
-      if (lives > 0) {
-        setQuestionIndex((idx) => idx + 1);
+        
+        // Only advance if we have lives left
+        if (lives > 0) {
+          setQuestionIndex((idx) => idx + 1);
+        } else {
+          navigate("/score", { state: { fromQuestions: true } });
+        }
+      } else if (isStrike) {
+        const correct = decode(questions[questionIndex].correct_answer);
+        const selected = selectedAnswers[questionIndex];
+        
+        // In strike mode, only advance if answer is correct
+        if (selected === correct) {
+          if (questionIndex + 1 < questions.length) {
+            setQuestionIndex((idx) => idx + 1);
+          } else {
+            // Last question answered correctly
+            navigate("/score", { state: { fromQuestions: true } });
+          }
+        } else {
+          // Wrong answer in strike mode
+          if (lives <= 0) {
+            navigate("/score", { state: { fromQuestions: true } });
+          }
+        }
       } else {
-        navigate("/score", { state: { fromQuestions: true } });
-      }
-    } else if (isStrike) {
-      const correct = decode(questions[questionIndex].correct_answer);
-      const selected = selectedAnswers[questionIndex];
-      
-      // In strike mode, only advance if answer is correct
-      if (selected === correct) {
+        // Normal or blitz mode
         if (questionIndex + 1 < questions.length) {
           setQuestionIndex((idx) => idx + 1);
         } else {
-          // Last question answered correctly
-          navigate("/score", { state: { fromQuestions: true } });
-        }
-      } else {
-        // Wrong answer in strike mode
-        if (lives <= 0) {
+          // End of questions
           navigate("/score", { state: { fromQuestions: true } });
         }
       }
-    } else {
-      // Normal or blitz mode
-      if (questionIndex + 1 < questions.length) {
-        setQuestionIndex((idx) => idx + 1);
-      } else {
-        // End of questions
-        navigate("/score", { state: { fromQuestions: true } });
-      }
-    }
+    });
   };
 
   const fetchMoreQuestions = async () => {
@@ -358,8 +556,15 @@ const Questions = () => {
   };
 
   const handlePrev = () => {
+    // Prevent multiple clicks during animation
+    if (isAnimating) return;
+    
     if (questionIndex > 0) {
-      setQuestionIndex((idx) => idx - 1);
+      // Animate out before changing question
+      const tl = animateQuestionTransitionOut();
+      tl.then(() => {
+        setQuestionIndex((idx) => idx - 1);
+      });
     }
   };
   
@@ -396,7 +601,7 @@ const Questions = () => {
           <Button variant="link" className="text-off-white" ><ArrowLeft strokeWidth={2}/> Exit to Home</Button>
         </Link>
 
-        <div className="text-white space-y-4">
+        <div ref={questionContainerRef} className="text-white space-y-4">
           {/* QUESTION NUMBER */}
           <h3 className="text-off-white/75 font-medium">
             {isBlitz && (
@@ -434,11 +639,12 @@ const Questions = () => {
       {/* RIGHT COLUMN - OPTIONS & NAV*/}
       <div className="flex-1 h-full w-full flex flex-col justify-between space-y-4 items-center px-4 py-8 md:px-2 md:py-12 xl:px-24 xl:py-20 overflow-hidden">
 
-        {/* THINKING AVATAR */}
-        <img src={thinkingAvatar} alt="" className="w-[30%] h-auto"/>
+        {/* THINKING AVATAR - Now uses currentAvatar state instead of thinkingAvatar3 */}
+        <img ref={avatarRef} src={currentAvatar} alt="" className="w-auto h-[40%]"/>
 
         {/* RADIO BUTTONS OPTIONS */}
         <RadioGroup
+          ref={optionsContainerRef}
           value={selectedOption}
           onValueChange={handleValueChange}
           className="space-y-2 w-full md:w-[80%]"
@@ -468,12 +674,13 @@ const Questions = () => {
               <label
                 key={i}
                 htmlFor={id}
+                ref={(el) => optionRefs.current[i] = el}
                 className={`flex items-center space-x-2 border-primary border-3 rounded-full px-2 py-2 w-full cursor-pointer ${
                   isScored && reviewingAnswer ? "opacity-80" : ""
                 } ${
-                  reviewingAnswer && isCorrectAnswer ? "bg-green-100/20" : ""
+                  reviewingAnswer && isCorrectAnswer ? "bg-green-100/50" : ""
                 } ${
-                  reviewingAnswer && isSelected && !isCorrectAnswer ? "bg-red-100/20" : ""
+                  reviewingAnswer && isSelected && !isCorrectAnswer ? "bg-red-100/50" : ""
                 }`}
               >
                 <RadioGroupItem
@@ -499,7 +706,7 @@ const Questions = () => {
           <Button
             variant="outline"
             onClick={handlePrev}
-            disabled={questionIndex === 0 || reviewingAnswer}
+            disabled={questionIndex === 0 || reviewingAnswer || isAnimating}
           >
           <ArrowLeft strokeWidth={2}/>  Previous
           </Button>
@@ -507,7 +714,7 @@ const Questions = () => {
           {/* MODIFIED: Next/Check/Continue button based on state */}
           <Button
             onClick={handleNext}
-            disabled={!selectedOption}
+            disabled={!selectedOption || isAnimating}
           >
             {(selectedAnswers[questionIndex] && !scoredQuestions.includes(questionIndex))
               ? "Check Answer"
@@ -516,7 +723,7 @@ const Questions = () => {
                 : questionIndex + 1 === questions.length 
                   ? "Finish" 
                   : "Next"} 
-            <ArrowRight strokeWidth={2} className="ml-1"/>
+            <ArrowRight strokeWidth={2}/>
           </Button>
         </div>
       </div>

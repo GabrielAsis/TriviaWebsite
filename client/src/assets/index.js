@@ -20,7 +20,6 @@ import whiteEndless from "../assets/White Endless Mode.svg";
 // misc
 import grainyFilter from "../assets/Grainy Filter.png";
 import spiralShape from "../assets/Spiral Shape.png";
-import thinkingAvatar from "../assets/thinking avatar 3.svg";
 
 // random avatars
 import avatar1 from "../assets/Random Avatars/Avatar 1.svg";
@@ -34,6 +33,20 @@ import avatar8 from "../assets/Random Avatars/Avatar 8.svg";
 import avatar9 from "../assets/Random Avatars/Avatar 9.svg";
 import avatar10 from "../assets/Random Avatars/Avatar 10.svg";
 import avatar11 from "../assets/Random Avatars/Avatar 11.svg";
+
+// thinking avatars
+import thinkingAvatar1 from "../assets/thinking avatar 1.svg";
+import thinkingAvatar2 from "../assets/thinking avatar 2.svg";
+import thinkingAvatar3 from "../assets/thinking avatar 3.svg";
+import thinkingAvatar4 from "../assets/thinking avatar 4.svg";
+import thinkingAvatar5 from "../assets/thinking avatar 5.svg";
+import thinkingAvatar6 from "../assets/thinking avatar 6.svg";
+import thinkingAvatar7 from "../assets/thinking avatar 7.svg";
+import thinkingAvatar8 from "../assets/thinking avatar 8.svg";
+import thinkingAvatar9 from "../assets/thinking avatar 9.svg";
+
+// Using thinkingAvatar3 as the default thinking avatar
+const thinkingAvatar = thinkingAvatar3;
 
 // category images
 import generalKnowledge from "../assets/Category Images/General Knowledge.jpg";
@@ -71,6 +84,15 @@ export {
   grainyFilter,
   spiralShape,
   thinkingAvatar,
+  thinkingAvatar1,
+  thinkingAvatar2,
+  thinkingAvatar3,
+  thinkingAvatar4,
+  thinkingAvatar5,
+  thinkingAvatar6,
+  thinkingAvatar7,
+  thinkingAvatar8,
+  thinkingAvatar9,
   endlessPng,
   blitzPng,
   avatar1,

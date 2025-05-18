@@ -59,7 +59,11 @@
           const querySnapshot = await getDocs(q);
           const usersList = [];
           querySnapshot.forEach((doc) => {
-            usersList.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            // Only include users with points > 0
+            if ((data.points ?? 0) > 0) {
+              usersList.push({ id: doc.id, ...data });
+            }
           });
           setUsers(usersList);
         } catch (error) {
@@ -162,7 +166,7 @@
           {loading ? (
             <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center">
               <div className="w-18 h-18 border-8 border-t-8 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-              <h3 className="ml-2">Loading questions...</h3>
+              <h3 className="ml-2">Loading...</h3>
             </div>
           ) : (
             <div className="w-full overflow-y-hidden overflow-x-auto">

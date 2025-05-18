@@ -36,7 +36,11 @@ export const Dashboard = () => {
             const querySnapshot = await getDocs(q);
             const usersList = [];
             querySnapshot.forEach((doc) => {
-              usersList.push({ id: doc.id, ...doc.data() });
+              const data = doc.data();
+              // Only include users with points > 0
+              if ((data.points ?? 0) > 0) {
+                usersList.push({ id: doc.id, ...data });
+              }
             });
 
             // Find the user's rank (index + 1)
@@ -145,13 +149,12 @@ export const Dashboard = () => {
             {placement &&
               <div className='bg-off-white text-black p-1.5 px-4 rounded-full mt-6 w-full flex flex-row justify-between items-center'>
                 <div className='flex flex-row justify-between items-center gap-2'>
-                      <div className='font-medium text-white bg-primary w-6 h-6 aspect-square rounded-full flex justify-center items-center'>{placement}</div>
-                      <h5>Leaderboard Placement</h5>
-                    </div>
-                  
-                  <Link to="/leaderboard" className='flex flex-row items-center gap-2 hover:underline text-sm'>
-                    View Leaderboards <ArrowRight strokeWidth={2} size={15}/>
-                  </Link>
+                  <div className='font-medium text-white bg-primary w-6 h-6 aspect-square rounded-full flex justify-center items-center'>{placement}</div>
+                  <h5>Leaderboard Placement</h5>
+                </div>
+                <Link to="/leaderboard" className='flex flex-row items-center gap-2 hover:underline text-sm'>
+                  View Leaderboards <ArrowRight strokeWidth={2} size={15}/>
+                </Link>
               </div>
             }
           </div>
