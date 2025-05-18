@@ -21,7 +21,7 @@ import { Toaster } from 'react-hot-toast';
 import { UserContextProvider } from '../context/userContext';
 import { useEffect, useState } from 'react';
 
-import { auth } from "./Components/firebase"
+import { auth } from "./components/firebase"
 
 // This component wraps the routes and conditionally renders NavBar and Footer
 function AppContent() {

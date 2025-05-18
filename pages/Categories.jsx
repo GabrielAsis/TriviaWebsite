@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 // Import GSAP
 import { gsap } from "gsap";
-import FadeInUp from '../src/Components/animations/FadeUp';
+import FadeInUp from '../src/components/animations/FadeUp';
 
 import { categoryData } from '../src/constants';
 

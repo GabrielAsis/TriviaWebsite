@@ -25,7 +25,7 @@ gsap.registerPlugin(useGSAP);
 import { categoryData } from '../src/constants';
 import useAxios from '../src/hooks/useAxios';
 
-import { db } from '../src/Components/firebase';
+import { db } from '../src/components/firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { logo } from '../src/assets';
 

@@ -7,7 +7,7 @@ import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
-import FadeInUp from '../src/Components/animations/FadeUp';
+import FadeInUp from '../src/components/animations/FadeUp';
 import { gsap } from "gsap";
 import { Link } from 'react-router';
 

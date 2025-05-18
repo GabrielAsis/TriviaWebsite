@@ -1,9 +1,9 @@
   import React, { useEffect, useRef, useState } from 'react';
-  import { db } from '../src/Components/firebase';
+  import { db } from '../src/components/firebase';
   import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
   // animation imports
-  import FadeInUp from '../src/Components/animations/FadeUp';
+  import FadeInUp from '../src/components/animations/FadeUp';
   import { gsap } from "gsap";
   import useAxios from '../src/hooks/useAxios';
 

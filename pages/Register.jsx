@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { logo } from '../src/assets';
 
 import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
-import { auth, db } from "../src/Components/firebase";
+import { auth, db } from "../src/components/firebase";
 import { setDoc, doc } from "firebase/firestore";
 
 export default function Register({ isOpen, setIsOpen, openLogin }) {

@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 
 // Firebase imports
 import { signOut } from "firebase/auth";
-import { auth, db } from "../src/Components/firebase.js";
+import { auth, db } from "../src/components/firebase.js";
 import { doc, getDoc } from "firebase/firestore";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 

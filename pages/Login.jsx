@@ -13,7 +13,7 @@ import { logo } from '../src/assets';
 
 // Firebase imports
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../src/Components/firebase";
+import { auth, db } from "../src/components/firebase";
 import { getDoc, doc } from "firebase/firestore";
 
 export default function Login({ isOpen, setIsOpen, openRegister, onLoginSuccess }) {
