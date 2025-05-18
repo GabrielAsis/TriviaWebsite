@@ -27,7 +27,7 @@ import useAxios from '../src/hooks/useAxios';
 
 import { db } from '../src/components/firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { logo, spiralShape } from '../src/assets';
+import { logo, spiralShape, jagged, hedgehog } from '../src/assets';
 
 
 export default function Home() {
@@ -337,11 +337,11 @@ export default function Home() {
       <div className='bg-gradient-to-tl from-primary to-[#8F5BFF] relative overflow-hidden'>
         {/* Spiral Top Left */}
         <div ref={ctaSpiralTopLeftRef} className='z-10 w-[65vw] sm:w-[55vw] lg:w-[42vw] h-auto absolute -top-[20%] -left-[15%] sm:-top-[30%] sm:-left-[25%] lg:-top-70 lg:-left-70 pointer-events-none'>
-          <img className='w-full h-auto' src="../src/assets/Jagged.png" alt="" />
+          <img className='w-full h-auto' src={jagged} alt="" />
         </div>
         {/* Spiral Bottom Right */}
         <div ref={ctaSpiralBottomRightRef} className='z-10 w-[65vw] sm:w-[55vw] lg:w-[42vw] h-auto absolute -bottom-[20%] -right-[15%] sm:-bottom-[30%] sm:-right-[25%] lg:-bottom-70 lg:-right-70 pointer-events-none'>
-          <img className='w-full h-auto' src="../src/assets/Hedgehog.png" alt="" />
+          <img className='w-full h-auto' src={hedgehog} alt="" />
         </div>
 
         {/* CONTAINER */}
