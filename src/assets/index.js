@@ -1,39 +1,23 @@
 // images
 import logo from "./Trivio Logo Icon.png";
 import siteIcon from "./Site Icon.png";
-import endlessPng from "./Endless Mode Bg Pic.png"
-import blitzPng from "./Blitz Mode Bg Pic.png"
-
 
 // icons
 import blitzSvg from "./Blitz Mode.svg";
-import customSvg from "./Custom Mode.svg";
 import endlessSvg from "./Endless mode.svg";
 import strikeSvg from "./Strike Mode.svg"
-import one from "./1.svg"
-import two from "./2.svg"
-import three from "./3.svg"
 import whiteBlitz from "./White Blitz Mode.svg"
 import whiteStrike from "./white-strike-mode.svg";
 import whiteEndless from "./white-endless-mode.svg";
 
 // misc
-import grainyFilter from "./Grainy Filter.png";
 import spiralShape from "./Spiral Shape.png";
 import roundedStar from "./Rounded Star.png"
-
-// random avatars
-import avatar1 from "./Random Avatars/Avatar 1.svg";
-import avatar2 from "./Random Avatars/Avatar 2.svg";
-import avatar3 from "./Random Avatars/Avatar 3.svg";
-import avatar4 from "./Random Avatars/Avatar 4.svg";
-import avatar5 from "./Random Avatars/Avatar 5.svg";
-import avatar6 from "./Random Avatars/Avatar 6.svg";
-import avatar7 from "./Random Avatars/Avatar 7.svg";
-import avatar8 from "./Random Avatars/Avatar 8.svg";
-import avatar9 from "./Random Avatars/Avatar 9.svg";
-import avatar10 from "./Random Avatars/Avatar 10.svg";
-import avatar11 from "./Random Avatars/Avatar 11.svg";
+import circleInception from "./Circle Inception.png"
+import jagged from "./Jagged.png"
+import hedgehog from "./Hedgehog.png"
+import triangles from "./Triangle.png"
+import fanBlade from "./Fan Blades.png"
 
 // thinking avatars
 import thinkingAvatar1 from "./thinking avatar 1.svg";
@@ -79,10 +63,8 @@ export {
   logo,
   siteIcon,
   blitzSvg,
-  customSvg,
   endlessSvg,
   strikeSvg,
-  grainyFilter,
   spiralShape,
   thinkingAvatar,
   thinkingAvatar1,
@@ -94,19 +76,6 @@ export {
   thinkingAvatar7,
   thinkingAvatar8,
   thinkingAvatar9,
-  endlessPng,
-  blitzPng,
-  avatar1,
-  avatar2,
-  avatar3,
-  avatar4,
-  avatar5,
-  avatar6,
-  avatar7,
-  avatar8,
-  avatar9,
-  avatar10,
-  avatar11,
   generalKnowledge,
   books,
   movies,
@@ -131,10 +100,13 @@ export {
   gadget,
   anime,
   cartoons,
-  one,
-  two,
-  three,
   whiteBlitz,
   whiteEndless,
   whiteStrike,
+  roundedStar,
+  circleInception,
+  jagged,
+  hedgehog,
+  triangles,
+  fanBlade,
 }

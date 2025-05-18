@@ -11,6 +11,8 @@ import FadeInUp from '../src/components/animations/FadeUp';
 
 import { categoryData } from '../src/constants';
 
+import { triangles } from '../src/assets';
+
 
 const Categories = () => {
   const navigate = useNavigate();
@@ -113,7 +115,7 @@ const Categories = () => {
           className='z-10 w-[150%] md:w-[60%] h-auto absolute left-1/2 top-1/2'
           style={{ opacity: 0 }} // Set initial opacity in inline style to prevent flash
         >
-          <img className='w-full h-auto' src="../src/assets/Triangle.png" alt="Triangle background shape" />
+          <img className='w-full h-auto' src={triangles} alt="Triangle background shape" />
         </div>
 
         <div className="container flex flex-col justify-center items-center z-20">

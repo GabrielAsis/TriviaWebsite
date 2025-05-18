@@ -11,6 +11,7 @@ import FadeInUp from '../src/components/animations/FadeUp';
 import { gsap } from "gsap";
 import { Link } from 'react-router';
 
+import { fanBlade } from '../src/assets';
 
 const Modes = () => {
   const [glow, setGlow] = useState({ x: 50, y: 50, index: null });
@@ -68,7 +69,7 @@ const Modes = () => {
           ref={spiralRef} 
           className='z-10 w-[100%] md:w-[80%] h-auto absolute left-1/2 top-1/2'
         >
-          <img className='w-full h-auto' src="../src/assets/Fan Blades.png" alt=" " />
+          <img className='w-full h-auto' src={fanBlade} alt=" " />
         </div>
 
       <div className='relative container z-20 overflow-hidden'>

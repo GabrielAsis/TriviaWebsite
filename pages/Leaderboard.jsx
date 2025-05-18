@@ -8,7 +8,7 @@
   import useAxios from '../src/hooks/useAxios';
 
   // assets imports 
-  import { one, two, three } from "../src/assets"
+  import { circleInception, roundedStar } from "../src/assets"
 
   const Leaderboard = () => {
     const [users, setUsers] = useState([]);
@@ -85,7 +85,7 @@
               className='z-10 w-[100%] md:w-[40%] h-auto absolute left-1 top-1'
               style={{ opacity: 0 }} // Set initial opacity in inline style to prevent flash
             >
-              <img className='w-full h-auto' src="../src/assets/Circle Inception.png" alt=" " />
+              <img className='w-full h-auto' src={circleInception} alt=" " />
             </div>
 
             <div 
@@ -93,7 +93,7 @@
               className='z-10 w-[100%] md:w-[40%] h-auto absolute left-full top-full'
               style={{ opacity: 0 }} // Set initial opacity in inline style to prevent flash
             >
-              <img className='w-full h-auto' src="../src/assets/Rounded Star.png" alt="" />
+              <img className='w-full h-auto' src={roundedStar} alt="" />
             </div>
     
             <div className="container flex flex-col justify-center items-center z-20">

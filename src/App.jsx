@@ -6,8 +6,6 @@ import Questions from "../pages/Questions";
 import FinalScore from "../pages/FinalScore";
 import Home from "../pages/Home";
 import { Dashboard } from '../pages/Dashboard';
-import Blitz from '../pages/Blitz';
-import Endless from '../pages/Endless';
 import Categories from '../pages/Categories';
 import Leaderboard from '../pages/Leaderboard';
 import Modes from '../pages/Modes'
@@ -63,7 +61,6 @@ function AppContent() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/questions" element={<Questions />} />
         <Route path="/score" element={<FinalScore />} />
-        <Route path="/blitz" element={<Blitz />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/modes" element={<Modes />} />

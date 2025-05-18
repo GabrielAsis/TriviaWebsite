@@ -27,8 +27,6 @@ import {
   thinkingAvatar7, 
   thinkingAvatar8, 
   thinkingAvatar9, 
-  endlessPng, 
-  blitzPng 
 } from "../src/assets";
 
 // icons
