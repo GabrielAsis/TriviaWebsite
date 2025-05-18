@@ -20,6 +20,7 @@ import whiteEndless from "./white-endless-mode.svg";
 // misc
 import grainyFilter from "./Grainy Filter.png";
 import spiralShape from "./Spiral Shape.png";
+import roundedStar from "./Rounded Star.png"
 
 // random avatars
 import avatar1 from "./Random Avatars/Avatar 1.svg";
