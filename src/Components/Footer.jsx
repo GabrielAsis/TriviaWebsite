@@ -32,7 +32,7 @@ const Footer = () => {
                   <Link to='/' class="hover:underline hover:opacity-80">Home</Link>
                 </li>
                 <li>
-                  <Link to='/category' class="hover:underline hover:opacity-80">Category</Link>
+                  <Link to='/categories' class="hover:underline hover:opacity-80">Category</Link>
                 </li>
                 <li>
                   <Link to='/leaderboard' class="hover:underline hover:opacity-80">Leaderboard</Link>
