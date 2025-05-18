@@ -15,7 +15,7 @@ import two from "./2.svg"
 import three from "./3.svg"
 import whiteBlitz from "./White Blitz Mode.svg"
 import whiteStrike from "./white-strike-mode.svg";
-import whiteEndless from "./White Endless Mode.svg";
+import whiteEndless from "./white-endless-mode.svg";
 
 // misc
 import grainyFilter from "./Grainy Filter.png";
