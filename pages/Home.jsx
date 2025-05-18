@@ -85,7 +85,6 @@ export default function Home() {
         {
           opacity: 1,
           x: 0,
-          duration: 1.2,
           ease: "circ.inOut",
           delay: 1,
           scrollTrigger: {
@@ -114,7 +113,6 @@ export default function Home() {
         {
           opacity: 1,
           x: 0,
-          duration: 1.2,
           ease: "circ.inOut",
           delay: 1,
           scrollTrigger: {
