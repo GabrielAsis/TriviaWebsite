@@ -14,7 +14,7 @@ import one from "./1.svg"
 import two from "./2.svg"
 import three from "./3.svg"
 import whiteBlitz from "./White Blitz Mode.svg"
-import whiteStrike from "./White Strike mode.svg";
+import whiteStrike from "./White Strike Mode.svg";
 import whiteEndless from "./White Endless Mode.svg";
 
 // misc
