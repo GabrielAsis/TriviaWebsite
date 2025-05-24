@@ -51,10 +51,10 @@ const Footer = () => {
                   <a href='https://opentdb.com/' class="hover:underline hover:opacity-80">API</a>
                 </li>
                 <li>
-                  <a href='' class="hover:underline hover:opacity-80">Documentation</a>
+                  <a href='https://docs.google.com/document/d/11Ya6WeZRel6ml4ShL8aT75cMnBfi7g-kO5KIOwIbcLE/edit?usp=sharing' class="hover:underline hover:opacity-80">Documentation</a>
                 </li>
                 <li>
-                  <a href='' class="hover:underline hover:opacity-80">Prototype</a>
+                  <a href='https://www.figma.com/design/VfS2bSs02lowL6TqOalHFg/Trivio-Site?node-id=0-1&t=ZGLxKLYiAA7UAxEP-1' class="hover:underline hover:opacity-80">Prototype</a>
                 </li>
                 <li>
                   <a href='https://github.com/GabrielAsis/TriviaWebsite.git' class="hover:underline hover:opacity-80">GitHub Repository</a>
