@@ -23,6 +23,8 @@ import Register from '../../pages/Register';
 
 import { logo } from '../assets';
 
+import { toast } from 'react-hot-toast'; // Add this import
+
 const NavBar = ({ colored = false }) => {
   const { user, setUser } = useContext(UserContext);
   const [open, setOpen] = useState(false);
@@ -37,38 +39,37 @@ const NavBar = ({ colored = false }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          // User is signed in, get their data from Firestore
           const userDocRef = doc(db, "Users", firebaseUser.uid);
           const userSnap = await getDoc(userDocRef);
-          
+
           if (userSnap.exists()) {
             const userData = userSnap.data();
-            // Set user in context with combined data
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
               name: userData.name,
-              // Add any other user data from Firestore here
+              points: userData.points || 0,
             });
+            // Show welcome back toast only if this is not the first load
+            if (!window._trivioWelcomeBackShown) {
+              toast.success(`Welcome back, ${userData.name || firebaseUser.email.split('@')[0]}!`);
+              window._trivioWelcomeBackShown = true;
+            }
           } else {
-            console.log("No user data found in Firestore");
-            // User exists in Auth but not in Firestore
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              name: firebaseUser.email.split('@')[0], // Fallback name from email
-            });
+            // If no Firestore user, sign out to avoid "ghost" login
+            setUser(null);
+            await auth.signOut();
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
+          setUser(null);
+          await auth.signOut();
         }
       } else {
-        // User is signed out
         setUser(null);
       }
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, [setUser]);
 
@@ -121,21 +122,18 @@ const NavBar = ({ colored = false }) => {
                 <Link to="/modes" onClick={() => setOpen(false)} className="block">Modes</Link>
 
                 <div className="flex flex-col space-y-4 w-fit">
-                  {user ? (
-                    <Link to="/dashboard" onClick={() => setOpen(false)}>
-                    <Avatar>
-                      <AvatarImage src='' />
-                      <AvatarFallback className="font-bold">
-                        {user.name
-                        ? user.name
-                            .match(/[A-Z]/g) // Extract uppercase letters (e.g., "GabrielAsis" → "GA")
-                            ?.slice(0, 2) // Take the first two letters
-                            .join('') || user.name.slice(0, 2).toUpperCase() // Fallback to first two characters if no uppercase letters
-                        : 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Link>
-                  ) : (
+                  {user && user.uid && user.email ? (
+                    <Link to="/dashboard">
+                      <Avatar>
+                        <AvatarImage src='' />
+                        <AvatarFallback>
+                          {user.name
+                            ? user.name.match(/[A-Z]/g)?.slice(0, 2).join('') || user.name.slice(0, 2).toUpperCase()
+                            : 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Link>
+                  )  : (
                     <>
                       <Login
                         isOpen={openLogin}
@@ -175,17 +173,14 @@ const NavBar = ({ colored = false }) => {
         </nav>
 
         <div className="hidden lg:flex lg:flex-1 lg:justify-end space-x-4">
-          {user ? (
+          {user && user.uid && user.email ? (
             <Link to="/dashboard">
               <Avatar>
                 <AvatarImage src='' />
                 <AvatarFallback>
                   {user.name
-                  ? user.name
-                      .match(/[A-Z]/g) // Extract uppercase letters (e.g., "GabrielAsis" → "GA")
-                      ?.slice(0, 2) // Take the first two letters
-                      .join('') || user.name.slice(0, 2).toUpperCase() // Fallback to first two characters if no uppercase letters
-                  : 'U'}
+                    ? user.name.match(/[A-Z]/g)?.slice(0, 2).join('') || user.name.slice(0, 2).toUpperCase()
+                    : 'U'}
                 </AvatarFallback>
               </Avatar>
             </Link>
