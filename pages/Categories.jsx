@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import useAxios from "../src/hooks/useAxios";
 import toast from "react-hot-toast";
 
-// Import GSAP
+
 import { gsap } from "gsap";
 import FadeInUp from '../src/components/animations/FadeUp';
 
@@ -18,23 +18,16 @@ const Categories = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Ref for spiral animation
   const spiralRef = useRef(null);
 
-  // Fetch categories from the API
   const { response, error, loading } = useAxios({ url: "/api_category.php" });
 
-  // Use useEffect instead of useGSAP to ensure DOM is ready
   useEffect(() => {
-    // Make sure the element exists before animating
     if (spiralRef.current) {
-      // Clear any existing animations to prevent conflicts
       gsap.killTweensOf(spiralRef.current);
       
-      // Create a timeline for sequencing animations
       const tl = gsap.timeline();
       
-      // Zoom + fade in while starting the spin
       tl.fromTo(spiralRef.current,
         {
           scale: 0,
@@ -56,7 +49,6 @@ const Categories = () => {
         }
       )
       
-      // Add continuous spinning animation after the initial animation
       .to(spiralRef.current, {
         rotation: '+=360',
         duration: 30,
@@ -67,9 +59,9 @@ const Categories = () => {
         yPercent: -50,
       });
     }
-  }, [response]); // Run when response changes to ensure content is loaded
+  }, [response]);
 
-  // Handle category selection
+  // Function to handle category selection
   const handleCategorySelect = (categoryId, categoryName) => {
     dispatch({
       type: 'CHANGE_CATEGORY',
@@ -107,13 +99,13 @@ const Categories = () => {
 
   return (
     <div className="flex flex-col bg-off-white">
-      {/* Hero section with spiral animation */}
+      {/* HERO SECTION */}
       <div className="w-full pt-40 pb-26 flex flex-col justify-center items-center bg-gradient-to-tl from-primary to-[#8F5BFF] text-white overflow-hidden relative">
         {/* SPIRAL IMAGE */}
         <div 
           ref={spiralRef} 
           className='z-10 w-[150%] md:w-[60%] h-auto absolute left-1/2 top-1/2'
-          style={{ opacity: 0 }} // Set initial opacity in inline style to prevent flash
+          style={{ opacity: 0 }}
         >
           <img className='w-full h-auto' src={triangles} alt="Triangle background shape" />
         </div>
@@ -135,7 +127,7 @@ const Categories = () => {
             {response?.trivia_categories?.map((category) => {
               const categoryInfo = categoryData[category.id] || { 
                 name: category.name,
-                image: generalKnowledge, // Fallback image
+                image: generalKnowledge,
                 description: "Test your knowledge in this category"
               };
 

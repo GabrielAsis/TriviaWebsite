@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
-// import pages
+// page imports
 import Settings from "../pages/Settings";
 import Questions from "../pages/Questions";
 import FinalScore from "../pages/FinalScore";
@@ -10,7 +10,7 @@ import Categories from '../pages/Categories';
 import Leaderboard from '../pages/Leaderboard';
 import Modes from '../pages/Modes'
 
-// import components
+// component imports
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer"
 
@@ -21,19 +21,15 @@ import { useEffect, useState } from 'react';
 
 import { auth } from "./components/firebase"
 
-// This component wraps the routes and conditionally renders NavBar and Footer
 function AppContent() {
   const location = useLocation();
   const [user, setUser] = useState();
   
-  // List of paths where NavBar and Footer should be hidden
+  // pages where nav & footer are hidden
   const hideNavAndFooterPaths = ['/questions', '/settings'];
+  const coloredNavBarPaths = ['/dashboard'];
 
-    const coloredNavBarPaths = ['/dashboard'];
-  
-  // Check if the current path is in the list of paths to hide NavBar and Footer
   const shouldHideNavAndFooter = hideNavAndFooterPaths.includes(location.pathname);
-
   const shouldUseColoredNavBar = coloredNavBarPaths.includes(location.pathname);
 
   useEffect(() => {

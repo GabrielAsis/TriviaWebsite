@@ -63,6 +63,7 @@ export const modes = [
   } 
 ]
 
+// CATEGORIES DATA
 export const categoryData = {
   9: {
     name: "General Knowledge",

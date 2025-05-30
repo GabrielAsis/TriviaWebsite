@@ -36,7 +36,6 @@ export default function Register({ isOpen, setIsOpen, openLogin }) {
       // Now we have the authenticated user with a valid UID
       console.log("User authenticated:", user.uid);
       
-      // Store additional user data in Firestore with points initialized to 0
       await setDoc(doc(db, "Users", user.uid), {
         email: email, 
         name: username,
@@ -52,16 +51,14 @@ export default function Register({ isOpen, setIsOpen, openLogin }) {
       setIsOpen(false);
       toast.success('Account registered successfully! Please login to continue.');
       setTimeout(() => {
-        openLogin(); // This opens the login modal
+        openLogin();
       }, 300);
           
     } catch (error) {
       console.error("Registration error:", error.message, error.code);
       
-      // Provide more user-friendly error messages
       let errorMessage = "Failed to create account. Please try again.";
       
-      // Handle specific Firebase auth errors with more professional messages
       if (error.code === 'auth/email-already-in-use') {
         errorMessage = "This email address is already in use.";
       } else if (error.code === 'auth/invalid-email') {

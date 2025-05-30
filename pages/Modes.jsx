@@ -18,6 +18,7 @@ const Modes = () => {
 
   const spiralRef = useRef(null);
 
+  // gsap animations
   useEffect(() => {
     gsap.killTweensOf(spiralRef.current);
     const tl = gsap.timeline();
@@ -50,7 +51,7 @@ const Modes = () => {
     })
   }, []);
 
-   // Handler for mouse move on card
+  // card hover effect
   const handleMouseMove = (e, idx) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -72,7 +73,9 @@ const Modes = () => {
           <img className='w-full h-auto' src={fanBlade} alt=" " />
         </div>
 
+      {/* CARD CONTAINER */}
       <div className='relative container z-20 overflow-hidden'>
+        {/* CARDS */}
         <FadeInUp triggerStart='top 100%' className='flex flex-col md:flex-row items-center justify-center gap-10 overflow-hidden'>
           {modes.map((mode, index) => (
             <Link   
@@ -84,7 +87,6 @@ const Modes = () => {
               onMouseMove={e => handleMouseMove(e, index)}
               onMouseLeave={handleMouseLeave}
             >
-                {/* Glow effect */}
                 {glow.index === index && (
                   <div
                     className="pointer-events-none absolute inset-0 transition-opacity duration-300"

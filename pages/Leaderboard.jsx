@@ -77,6 +77,7 @@
 
     return (
       <>
+        {/* HERO SECTION */}
         <div>
           <div className="w-full pt-40 pb-26 flex flex-col justify-center items-center bg-gradient-to-t from-primary to-[#8F5BFF] text-white overflow-hidden relative">
             {/* SPIRAL IMAGE */}
@@ -93,7 +94,7 @@
               className='z-10 w-[100%] md:w-[40%] h-auto absolute left-full top-full'
               style={{ opacity: 0 }} // Set initial opacity in inline style to prevent flash
             >
-              <img className='w-full h-auto' src={roundedStar3} alt="" />
+              <img className='w-full h-auto' src={roundedStar} alt="" />
             </div>
     
             <div className="container flex flex-col justify-center items-center z-20">
@@ -114,6 +115,7 @@
           </div>
         </div>
 
+        {/* PODIUMS */}
         <div className="max-w-3xl mx-auto pt-15 pb-20 flex flex-col justify-center items-center gap-6 px-4 sm:px-6 lg:px-8 xl:px-0">
           <div className="flex items-end justify-center gap-1 mt-10 w-full">
             {[1, 0, 2].map((podiumIdx, i) => {
@@ -163,6 +165,8 @@
               );
             })}
           </div>
+
+          {/* LEADERBOARD LIST */}
           {loading ? (
             <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center">
               <div className="w-18 h-18 border-8 border-t-8 border-gray-300 border-t-primary rounded-full animate-spin"></div>
@@ -171,14 +175,13 @@
           ) : (
             <div className="w-full overflow-y-hidden overflow-x-auto">
               <FadeInUp className="min-w-[500px] flex flex-col"  triggerStart='8% 50%'>
-                {/* Header */}
                 <div className="flex font-medium px-6 py-2">
                   <div className="w-1/6 text-left">Rank</div>
                   <div className="w-2/6 text-left">Name</div>
                   <div className="w-2/6 text-left">Points</div>
                   <div className="w-1/6 text-left">Accuracy</div>
                 </div>
-                {/* Rows */}
+
                 <div className='flex flex-col gap-4'>
                   {users.slice(3).map((user, idx) => (
                     <div

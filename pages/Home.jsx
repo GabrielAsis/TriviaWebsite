@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-// shadcd UI
+// shadcd imports
 import { Button } from "@/components/ui/button" 
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import {
@@ -42,7 +42,6 @@ export default function Home() {
 
   // GSAP Animations
   useGSAP(() => {
-    // HERO spiral animation (unchanged)
     if (spiralRef.current) {
       const tl = gsap.timeline();
       tl.fromTo(
@@ -77,7 +76,6 @@ export default function Home() {
       });
     }
 
-    // CTA spirals fade-in from left/right on scroll
     if (ctaSpiralTopLeftRef.current) {
       gsap.fromTo(
         ctaSpiralTopLeftRef.current,

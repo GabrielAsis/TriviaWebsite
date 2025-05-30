@@ -35,7 +35,6 @@ export default function Login({ isOpen, setIsOpen, openRegister, onLoginSuccess 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Get additional user data from Firestore
       const userDoc = await getDoc(doc(db, "Users", user.uid));
       
       if (userDoc.exists()) {
@@ -46,15 +45,11 @@ export default function Login({ isOpen, setIsOpen, openRegister, onLoginSuccess 
           uid: user.uid,
           email: user.email,
           name: userData.name,
-          points: userData.points || 0, // Include points in the user context
-          // Add any other fields you need from Firestore
+          points: userData.points || 0,
         };
         
-        // Update context with user data
         setUser(userInfo);
         
-        // Store auth token in localStorage if needed
-        // Note: Firebase handles tokens automatically, but you can store UID or custom token
         localStorage.setItem('token', user.uid);
         
         console.log("User logged in successfully");
@@ -62,10 +57,9 @@ export default function Login({ isOpen, setIsOpen, openRegister, onLoginSuccess 
         setIsOpen(false);
         
         if (onLoginSuccess) {
-          onLoginSuccess(); // Call the callback to update parent state
+          onLoginSuccess();
         }
       } else {
-        // This case handles if the user exists in Authentication but not in Firestore
         console.error("User document doesn't exist in Firestore");
         setError("User profile not found. Please contact support.");
         toast.error("User profile not found");
@@ -74,7 +68,6 @@ export default function Login({ isOpen, setIsOpen, openRegister, onLoginSuccess 
       console.error("Login error:", error.message);
       let errorMessage = "Failed to login. Please check your credentials.";
       
-      // Handle specific Firebase auth errors with more user-friendly messages
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         errorMessage = "Invalid email or password";
       } else if (error.code === 'auth/too-many-requests') {

@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useLocation, Link } from "react-router-dom"; // Add useLocation
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { handleAmountChange, handleScoreChange } from "../redux/actions";
 import { useEffect, useState, useContext } from "react";
 import { UserContext } from "../context/userContext";
@@ -10,7 +10,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 import Confetti from 'react-confetti';
-import { useWindowSize } from '@react-hook/window-size'; // Optional for responsive confetti
+import { useWindowSize } from '@react-hook/window-size';
 
 import { Button } from "@/components/ui/button";
 
@@ -22,16 +22,14 @@ const FinalScore = () => {
   const dispatch = useDispatch();
   const { score } = useSelector((state) => state);
   const navigate = useNavigate();
-  const location = useLocation(); // Get location to check for state
+  const location = useLocation();
   
-  const [updateStatus, setUpdateStatus] = useState("waiting"); // waiting, updating, success, error
+  const [updateStatus, setUpdateStatus] = useState("waiting");
   const [pointsAdded, setPointsAdded] = useState(0);
   const [isValidVisit, setIsValidVisit] = useState(false);
   
-  // Get user from context
   const { user: contextUser, setUser } = useContext(UserContext);
   
-  // Create a local reliable user state
   const [currentUser, setCurrentUser] = useState(null);
   const [userDataFetched, setUserDataFetched] = useState(false);
 
@@ -39,7 +37,6 @@ const FinalScore = () => {
   
   const [width, height] = useWindowSize();
 
-  // Check if this is a valid visit to the score page
   useEffect(() => {
     // Check for a completion token in sessionStorage
     const completionToken = sessionStorage.getItem('trivio_completion_token');
@@ -65,7 +62,6 @@ const FinalScore = () => {
     }
   }, [location, navigate]);
   
-  // 1. First, ensure we have the latest user from Firebase Auth
   useEffect(() => {
     console.log("Setting up auth listener in FinalScore");
     
@@ -117,7 +113,6 @@ const FinalScore = () => {
     return () => unsubscribe();
   }, [setUser, contextUser]);
   
-  // 2. Now handle point updates once we have reliable user data
   useEffect(() => {
     // Don't proceed if this isn't a valid visit
     if (!isValidVisit) {
@@ -220,7 +215,6 @@ const FinalScore = () => {
     navigate("/");
   };
 
-  // Display user feedback with additional invalid access message if needed
   return (
     <>
       <div className="text-center text-white w-full flex flex-col justify-center items-center gap-8 bg-radial from-[#8F5BFF] to-primary relative pt-[130px] pb-24">
@@ -286,30 +280,6 @@ const FinalScore = () => {
                     Error updating points. Please try again later.
                   </p>
                 )}
-
-                {/* {!userDataFetched && (
-                  <p className="text-gray-500">Connecting to your account...</p>
-                )} */}
-                
-                {/* {updateStatus === "waiting" && userDataFetched && currentUser && (
-                  <p className="text-gray-500">Preparing to update points...</p>
-                )} */}
-                
-                {/* {updateStatus === "updating" && (
-                  <p className="text-blue-500">Updating your points...</p>
-                )} */}
-                
-                {/* {updateStatus === "success" && (
-                  <p className="text-green-500">
-                    Successfully added {pointsAdded || (score * 15)} points to your account!
-                  </p>
-                )} */}
-                
-                {/* {currentUser && (
-                  <p className="text-sm mt-4">
-                    Playing as: {currentUser.name} | Current Points: {currentUser.points}
-                  </p>
-                )} */}
               </>
             )}
           </div>

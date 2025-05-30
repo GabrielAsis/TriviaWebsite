@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export const Dashboard = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [placement, setPlacement] = useState(null); // <-- Add this
+  const [placement, setPlacement] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,25 +30,21 @@ export const Dashboard = () => {
             const details = { uid: user.uid, ...docSnap.data() };
             setUserDetails(details);
 
-            // Fetch all users sorted by points
             const usersRef = collection(db, "Users");
             const q = query(usersRef, orderBy("points", "desc"));
             const querySnapshot = await getDocs(q);
             const usersList = [];
             querySnapshot.forEach((doc) => {
               const data = doc.data();
-              // Only include users with points > 0
               if ((data.points ?? 0) > 0) {
                 usersList.push({ id: doc.id, ...data });
               }
             });
 
-            // Find the user's rank (index + 1)
             const rank = usersList.findIndex(u => u.id === user.uid);
             setPlacement(rank !== -1 ? rank + 1 : null);
           }
         } catch (error) {
-          // handle error
         }
       }
       setLoading(false);
@@ -57,11 +53,12 @@ export const Dashboard = () => {
     return () => unsubscribe();
   }, []);
 
+  // Function for logout
   async function handleLogout() {
     try {
       await signOut(auth);
       toast.success('Logged out successfully');
-      navigate('/'); // Redirect to home page
+      navigate('/');
     } catch (error) {
       console.error("Error logging out:", error.message);
       toast.error('Failed to log out. Please try again.');
@@ -136,9 +133,9 @@ export const Dashboard = () => {
               <AvatarFallback className='text-3xl'>
                 {userDetails.name
                 ? userDetails.name
-                    .match(/[A-Z]/g) // Extract uppercase letters (e.g., "GabrielAsis" → "GA")
-                    ?.slice(0, 2) // Take the first two letters
-                    .join('') || userDetails.name.slice(0, 2).toUpperCase() // Fallback to first two characters if no uppercase letters
+                    .match(/[A-Z]/g)
+                    ?.slice(0, 2)
+                    .join('') || userDetails.name.slice(0, 2).toUpperCase()
                 : 'U'}
               </AvatarFallback>
             </Avatar>

@@ -5,16 +5,16 @@ import { handleScoreChange } from "../redux/actions";
 import { decode } from "html-entities";
 import axios from "axios";
 import { Link } from 'react-router-dom'
-import gsap from 'gsap'; // Import GSAP for animations
+import gsap from 'gsap';
 
-// your Shadcn imports
+// shadcn imports
 import {
   RadioGroup,
   RadioGroupItem,
 } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import toast from 'react-hot-toast'; // Import react-hot-toast
+import toast from 'react-hot-toast'; 
 
 // assets imports
 import { 
@@ -29,14 +29,13 @@ import {
   thinkingAvatar9, 
 } from "../src/assets";
 
-// icons
+// icon imports
 import { ArrowLeft, ArrowRight, Heart, HeartCrack, HeartOff, Check, X } from "lucide-react";  
 
-// number randomizer
 const getRandomInt = (max) =>
   Math.floor(Math.random() * Math.floor(max));
 
-// Create an array of all thinking avatars for random selection
+// Thinking avatars
 const thinkingAvatars = [
   thinkingAvatar1,
   thinkingAvatar2,
@@ -49,7 +48,6 @@ const thinkingAvatars = [
   thinkingAvatar9
 ];
 
-// Function to get a random avatar
 const getRandomAvatar = () => thinkingAvatars[getRandomInt(thinkingAvatars.length)];
 
 const Questions = () => {
@@ -57,7 +55,6 @@ const Questions = () => {
   const queryParams = new URLSearchParams(location.search);
   const mode = queryParams.get("mode") || "normal"; // fallback
   
-  // Get timer from URL if in blitz mode
   const timerParam = queryParams.get("timer");
   const defaultTimer = timerParam ? parseInt(timerParam) : 60;
 
@@ -65,7 +62,6 @@ const Questions = () => {
   const isEndless = mode === "endless";
   const isStrike = mode === "strike";
 
-  // Get values from Redux store
   const question_category = useSelector((state) => state.question_category);
   const question_difficulty = useSelector((state) => state.question_difficulty);
   const question_type = useSelector((state) => state.question_type);
@@ -75,17 +71,13 @@ const Questions = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Refs for GSAP animations
   const questionContainerRef = useRef(null);
   const optionsContainerRef = useRef(null);
   const avatarRef = useRef(null);
-  // Individual option refs - stored by index
   const optionRefs = useRef({});
 
-  // Store options for each question separately
   const [allOptions, setAllOptions] = useState([]);
 
-  // USE STATES
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
@@ -95,43 +87,32 @@ const Questions = () => {
   const [scoredQuestions, setScoredQuestions] = useState([]);
   const [answerResults, setAnswerResults] = useState([]);
   
-  // Add state for the current avatar
   const [currentAvatar, setCurrentAvatar] = useState(() => getRandomAvatar());
   
-  // Timer states - use default from URL parameter or 60 seconds
   const [timer, setTimer] = useState(isBlitz ? defaultTimer : 0);
   const [isGameOver, setIsGameOver] = useState(false);
   
-  // FIX: Set timerStarted state based on URL parameter or default to true
-  // This ensures the timer actually starts counting down
   const timerStartedParam = queryParams.get("timerStarted");
   const [timerStarted, setTimerStarted] = useState(timerStartedParam === "true" || true);
 
-  // Use a ref to track if we should stop retrying
   const shouldStopRetrying = useRef(false);
 
   const [lives, setLives] = useState(isEndless ? 3 : isStrike ? 1 : null);
 
-  // Animation state to prevent double transitions
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // NEW: Add a state to track if we're in the "review answer" state
   const [reviewingAnswer, setReviewingAnswer] = useState(false);
 
-  // GSAP animation function to fade out content when moving between questions
   const animateQuestionTransitionOut = useCallback(() => {
     setIsAnimating(true);
     
-    // Create a GSAP timeline for coordinated animations
     const tl = gsap.timeline({
       onComplete: () => {
         setIsAnimating(false);
-        // Set a new random avatar after fade out completes
         setCurrentAvatar(getRandomAvatar());
       }
     });
     
-    // Fade out the question, options, and avatar
     tl.to(questionContainerRef.current, {
       opacity: 0,
       y: -20,
@@ -156,9 +137,7 @@ const Questions = () => {
     return tl;
   }, []);
 
-  // GSAP animation function to fade in content for a new question
   const animateQuestionTransitionIn = useCallback(() => {
-    // Reset positions first
     gsap.set([questionContainerRef.current, optionsContainerRef.current], {
       opacity: 0,
       y: 20
@@ -169,10 +148,8 @@ const Questions = () => {
       scale: 0.95
     });
     
-    // Create animation timeline
     const tl = gsap.timeline();
     
-    // Fade in the question, options, and avatar
     tl.to(questionContainerRef.current, {
       opacity: 1,
       y: 0,
@@ -197,11 +174,9 @@ const Questions = () => {
     return tl;
   }, []);
 
-  // New animation: Shake the incorrect answer
   const animateIncorrectAnswer = useCallback((optionElement) => {
     if (!optionElement) return;
     
-    // Create a shake animation
     gsap.to(optionElement, {
         keyframes: {
         rotation: [6,-5, 3,-2, 0]
@@ -211,14 +186,11 @@ const Questions = () => {
     });
   }, []);
 
-  // New animation: Bounce the correct answer
   const animateCorrectAnswer = useCallback((optionElement) => {
     if (!optionElement) return;
     
-    // Create a timeline for the bounce animation
     const tl = gsap.timeline();
     
-    // First bounce up with a scale increase
     tl.to(optionElement, {
       y: -10,
       scale: 1.05,
@@ -226,40 +198,28 @@ const Questions = () => {
       ease: "power2.out"
     });
     
-    // Then bounce back with a nice spring effect
     tl.to(optionElement, {
       y: 0,
       scale: 1,
       duration: 0.7,
-      ease: "elastic.out(1.2, 0.5)" // Spring-like easing
+      ease: "elastic.out(1.2, 0.5)" 
     });
     
     return tl;
   }, []);
 
   useEffect(() => {
-    // Reset score when this component mounts (new game)
     dispatch(handleScoreChange(0));
     
-    // Fade in the first question when component mounts
     if (questions.length > 0 && !loading) {
       animateQuestionTransitionIn();
     }
   }, [dispatch, questions, loading, animateQuestionTransitionIn]);
-
-  // Define handleFinish near the top to avoid reference issues
-  const handleFinish = useCallback(() => {
-    // This function is no longer used - all navigation is handled in handleContinueAfterReview
-    // Keeping it as a placeholder in case we need to revisit
-    console.log("handleFinish called - this is deprecated");
-  }, []);
   
-  // Get the selected option for the current question
   const selectedOption = selectedAnswers[questionIndex] || "";
   
-  // Brute force fetch with retries regardless of errors
+  // Functions to rety fetching questions
   const fetchQuestionsWithRetry = useCallback(async (maxRetries = 10, isAdditionalFetch = false) => {
-    // Only skip fetching for initial load, not for endless mode additional fetches
     if (questions.length > 0 && !isAdditionalFetch) {
       console.log("Questions already loaded, skipping initial fetch");
       return [];
@@ -269,7 +229,6 @@ const Questions = () => {
     let success = false;
     let fetchedQuestions = [];
     
-    // Reset the stop flag when starting a new fetch for initial load
     if (!isAdditionalFetch) {
       shouldStopRetrying.current = false;
     }
@@ -284,7 +243,6 @@ const Questions = () => {
         const urlCategory = queryParams.get("category");
         const categoryToUse = urlCategory || question_category;
         
-        // For additional fetch in endless mode, always get 10 more
         const amountToFetch = isAdditionalFetch ? 10 : amount_of_question;
         
         let apiUrl = `https://opentdb.com/api.php?amount=${amountToFetch}`;
@@ -296,9 +254,7 @@ const Questions = () => {
         
         const response = await axios.get(apiUrl);
         
-        // Check for valid response structure
         if (response.data && response.data.response_code !== undefined) {
-          // OpenTrivia API uses response_code to indicate status
           if (response.data.response_code === 0 && 
               response.data.results && 
               response.data.results.length > 0) {
@@ -339,22 +295,20 @@ const Questions = () => {
   }, [amount_of_question, question_category, question_difficulty, question_type, queryParams, questions.length]);
 
   
-  // Cleanup function to stop retries when unmounting
   useEffect(() => {
     return () => {
-      // Set flag to stop retries when component unmounts
       shouldStopRetrying.current = true;
     };
   }, []);
   
-  // Start fetching on component mount
+  // Start fetching questions
   useEffect(() => {
     if (questions.length === 0) {
       fetchQuestionsWithRetry();
     }
   }, [fetchQuestionsWithRetry, questions.length]);
 
-  // build and shuffle options when questionIndex or questions change
+  // Option randomizer
   useEffect(() => {
     if (!questions.length || !questions[questionIndex]) return;
 
@@ -372,18 +326,16 @@ const Questions = () => {
       setOptions(allOptions[questionIndex]);
     }
     
-    // Animate in the new question if not the initial load
     if (!loading && questions.length > 0) {
       animateQuestionTransitionIn();
     }
   }, [questions, questionIndex, allOptions, loading, animateQuestionTransitionIn]);
   
-  // Timer effect - only runs in blitz mode
+  // Timer effect
   useEffect(() => {
     console.log("Timer effect running. isBlitz:", isBlitz, "timer:", timer, "isGameOver:", isGameOver, 
                 "questions.length:", questions.length, "timerStarted:", timerStarted);
                 
-    // Only activate timer if in blitz mode and questions have loaded
     if (isBlitz && timer > 0 && !isGameOver && questions.length > 0) {
       console.log("Starting timer countdown");
       const interval = setInterval(() => {
@@ -393,21 +345,17 @@ const Questions = () => {
       return () => clearInterval(interval);
     } else if (isBlitz && timer === 0 && !isGameOver && questions.length > 0) {
       console.log("Timer reached zero, ending game");
-      // Trigger game over
       setIsGameOver(true);
       
-      // Animate out content before navigating
       const tl = animateQuestionTransitionOut();
       tl.then(() => {
-        // Navigate to score with a state indicator that we came from questions
         navigate("/score", { state: { fromQuestions: true } });
       });
     }
   }, [timer, isGameOver, isBlitz, questions.length, timerStarted, navigate, animateQuestionTransitionOut]);
   
-  // stores selected radio button value
+  // Stores selected optoins
   const handleValueChange = (value) => {
-    // Start timer when user first interacts with the quiz
     if (!timerStarted) {
       setTimerStarted(true);
     }
@@ -417,8 +365,8 @@ const Questions = () => {
     setSelectedAnswers(updatedAnswers);
   };
 
+  // Check answer
   const handleNext = async () => {
-    // Prevent multiple clicks during animation
     if (isAnimating) return;
     
     if (!questions[questionIndex]) {
@@ -426,17 +374,14 @@ const Questions = () => {
       return;
     }
 
-    // If we're already reviewing an answer, this is the "Continue" button click
     if (reviewingAnswer) {
       handleContinueAfterReview();
       return;
     }
 
-    // Otherwise, this is the first click to check the answer
     const correct = decode(questions[questionIndex].correct_answer);
     const selected = selectedAnswers[questionIndex];
 
-    // Only score if not already scored
     if (!scoredQuestions.includes(questionIndex)) {
       const isCorrect = selected === correct;
       setAnswerResults((prev) => {
@@ -445,30 +390,24 @@ const Questions = () => {
         return updated;
       });
 
-      // Find correct option index and selected option index
       const selectedIndex = options.findIndex(opt => decode(opt) === selected);
       const correctIndex = options.findIndex(opt => decode(opt) === correct);
       
-      // Get DOM elements for the selected and correct options
       const selectedElement = optionRefs.current[selectedIndex];
       const correctElement = optionRefs.current[correctIndex];
       
       if (isCorrect) {
-        // If correct, animate the selected option (which is also the correct one)
         animateCorrectAnswer(selectedElement);
         dispatch(handleScoreChange(score + 1));
         toast.success("Correct! Well done!");
       } else {
-        // If incorrect, shake the selected option and then bounce the correct one
         animateIncorrectAnswer(selectedElement);
-        // Wait a short moment before showing the correct answer
         setTimeout(() => {
           animateCorrectAnswer(correctElement);
         }, 600);
         
         toast.error(`Incorrect Answer 🥀`);
         
-        // Deduct a life in endless or strike mode
         if ((isEndless || isStrike) && lives > 0) {
           setLives((prevLives) => {
             const newLives = prevLives - 1;
@@ -479,26 +418,20 @@ const Questions = () => {
 
       setScoredQuestions([...scoredQuestions, questionIndex]);
       
-      // Immediately enter review mode without animation
       setReviewingAnswer(true);
     }
   };
 
-  // NEW: Continue to the next question after reviewing the answer
+  //Move to next question after checking answer
   const handleContinueAfterReview = async () => {
-    // Prevent multiple clicks during animation
     if (isAnimating) return;
     
-    // Start fade out animation for question transition
     const tl = animateQuestionTransitionOut();
     
-    // Wait for animation to complete before changing state
     tl.then(async () => {
       setReviewingAnswer(false);
       
-      // Logic for different modes
       if (isEndless) {
-        // Check if we need more questions
         if (questionIndex + 1 >= questions.length) {
           console.log("Reached end of questions, fetching more...");
           const newQuestions = await fetchMoreQuestions();
@@ -548,17 +481,17 @@ const Questions = () => {
     });
   };
 
+  // Fetching more questions for endless mode
   const fetchMoreQuestions = async () => {
     console.log("Fetching more questions for endless mode");
-    return await fetchQuestionsWithRetry(5, true); // 5 retries max, and flag as additional fetch
+    return await fetchQuestionsWithRetry(5, true);
   };
 
+  // Move to previous question
   const handlePrev = () => {
-    // Prevent multiple clicks during animation
     if (isAnimating) return;
     
     if (questionIndex > 0) {
-      // Animate out before changing question
       const tl = animateQuestionTransitionOut();
       tl.then(() => {
         setQuestionIndex((idx) => idx - 1);
@@ -566,7 +499,7 @@ const Questions = () => {
     }
   };
   
-  // Manual retry button handler
+  // Function to retry fetching questions manually
   const handleManualRetry = () => {
     setLoading(true);
     setRetryCount(0);
@@ -581,7 +514,8 @@ const Questions = () => {
         <h3 className="ml-2">Loading questions...</h3>
       </div>
     );
-    
+  
+  // If no questions fetched
   if (!questions.length)
     return (
       <div className="flex flex-col space-y-4 justify-center items-center w-full h-[100vh] text-center text-red-500">
@@ -637,7 +571,6 @@ const Questions = () => {
       {/* RIGHT COLUMN - OPTIONS & NAV*/}
       <div className="flex-1 h-full w-full flex flex-col justify-between space-y-4 items-center px-4 py-8 md:px-2 md:py-12 xl:px-24 xl:py-20 overflow-hidden">
 
-        {/* THINKING AVATAR - Now uses currentAvatar state instead of thinkingAvatar3 */}
         <img ref={avatarRef} src={currentAvatar} alt="" className="w-auto h-[40%]"/>
 
         {/* RADIO BUTTONS OPTIONS */}
@@ -700,7 +633,6 @@ const Questions = () => {
           
         {/* NEXT & PREV BUTTONS */}
         <div className="flex flex-row justify-center items-center space-x-2">
-          {/* prev button - disabled during review */}
           <Button
             variant="outline"
             onClick={handlePrev}
@@ -709,7 +641,6 @@ const Questions = () => {
           <ArrowLeft strokeWidth={2}/>  Previous
           </Button>
 
-          {/* MODIFIED: Next/Check/Continue button based on state */}
           <Button
             onClick={handleNext}
             disabled={!selectedOption || isAnimating}

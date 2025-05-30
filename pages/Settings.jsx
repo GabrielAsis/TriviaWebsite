@@ -9,35 +9,34 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import toast from "react-hot-toast"; // Import toast
+import toast from "react-hot-toast";
 
 const Settings = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  // Get all required values from Redux store
+  // Required values
   const { 
     question_category, 
     question_difficulty, 
     amount_of_question 
   } = useSelector((state) => state);
   
-  // Use local state for timer instead of Redux
   const [blitzTimer, setBlitzTimer] = useState("");
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const mode = queryParams.get("mode"); // Default to custom if no mode
+  const mode = queryParams.get("mode");
 
+  // modes
   const isBlitzMode = mode === "blitz";
   const isEndlessMode = mode === "endless";
   const isStrikeMode = mode === "strike"; 
 
   const { response, error, loading } = useAxios({ url: "/api_category.php" });
 
-  // Set default amount of questions for endless mode
+  // Add default amount of questions for endless mode
   useEffect(() => {
-    // If we're in endless mode, set a default of 20 questions
     if (isEndlessMode && (!amount_of_question || amount_of_question < 1)) {
       dispatch({
         type: 'CHANGE_AMOUNT',
@@ -46,17 +45,16 @@ const Settings = () => {
     }
   }, [isEndlessMode, amount_of_question, dispatch]);
 
-  // Timer input handler - use local state
+  // Timer input handler
   const handleTimerChange = (e) => {
     const value = parseInt(e.target.value);
     setBlitzTimer(value);
   };
 
-  // Function to validate form and navigate
+  // Start playing trivia
   const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     
-    // Validate form (check if required fields are set)
     if (!question_category) {
       toast.error("Please select a category");
       return;
@@ -67,7 +65,6 @@ const Settings = () => {
       return;
     }
     
-    // Only validate amount of questions if NOT in Endless mode
     if (!isEndlessMode) {
       if (!amount_of_question || amount_of_question < 1) {
         toast.error("Please enter a valid number of questions");
@@ -79,7 +76,6 @@ const Settings = () => {
         return;
       }
     } else {
-      // For endless mode, set a default of 20 questions if not already set
       if (!amount_of_question || amount_of_question < 1) {
         dispatch({
           type: 'CHANGE_AMOUNT',
@@ -88,7 +84,6 @@ const Settings = () => {
       }
     }
     
-    // Validate timer if in blitz mode
     if (isBlitzMode) {
       const timerValue = blitzTimer === "" ? 0 : parseInt(blitzTimer);
       if (!timerValue || timerValue < 10) {
@@ -102,10 +97,8 @@ const Settings = () => {
       }
     }
     
-    // All validations passed, show success toast and navigate
     toast.success("Starting your trivia game!");
     
-    // Make sure to include the mode parameter AND timer in URL for blitz mode
     if (isBlitzMode) {
       navigate(`/questions?mode=${mode}&timer=${blitzTimer}&timerStarted=true`);
     } else {
@@ -122,11 +115,11 @@ const Settings = () => {
     );
   }
 
+  // Handle errors
   if (error) {
     console.log("Error Details:", error);
     console.log("Response Data:", response);
     
-    // Use toast for error instead of returning error UI
     toast.error("Failed to load settings. Please try again.");
     
     return (
@@ -200,7 +193,6 @@ const Settings = () => {
             )}
             
             <div className="mt-4">
-              {/* Use button type="submit" to trigger form validation */}
               <Button type="submit" className="px-6 py-2 gap-2">
                 Play! <ArrowRight strokeWidth={2} />
               </Button>
