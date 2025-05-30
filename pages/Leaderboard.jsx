@@ -93,7 +93,7 @@
               className='z-10 w-[100%] md:w-[40%] h-auto absolute left-full top-full'
               style={{ opacity: 0 }} // Set initial opacity in inline style to prevent flash
             >
-              <img className='w-full h-auto' src={roundedStar} alt="" />
+              <img className='w-full h-auto' src={roundedStar3} alt="" />
             </div>
     
             <div className="container flex flex-col justify-center items-center z-20">
