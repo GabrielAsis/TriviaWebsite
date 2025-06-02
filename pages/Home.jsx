@@ -29,11 +29,16 @@ import { db } from '../src/components/firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { logo, spiralShape, jagged, hedgehog } from '../src/assets';
 
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+
 
 export default function Home() {
   const spiralRef = useRef(null)
   const ctaSpiralTopLeftRef = useRef(null)
   const ctaSpiralBottomRightRef = useRef(null)
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { response, error, loading } = useAxios({ url: "/api_category.php" });
 
@@ -153,6 +158,21 @@ export default function Home() {
     fetchLeaderboard();
   }, []);
 
+  const handleCategorySelect = (categoryId, categoryName) => {
+    dispatch({
+      type: 'CHANGE_CATEGORY',
+      payload: { category: categoryId, categoryName }
+    });
+
+    dispatch({
+      type: 'CHANGE_AMOUNT',
+      payload: 15
+    });
+
+    navigate(`/questions?category=${categoryId}&categoryName=${encodeURIComponent(categoryName)}`);
+    toast.success(`Selected category: ${categoryName}`);
+  };
+
   return (
     <>
       {/* HERO SECTION */}
@@ -239,10 +259,10 @@ export default function Home() {
                     <CarouselItem
                       key={category.id}
                       className="sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                      onClick={() => handleCategorySelect(category.id, categoryInfo.name)}
                     >
                       <div
                         className="cursor-pointer overflow-hidden flex flex-col gap-4"
-                        onClick={() => handleCategorySelect(category.id, categoryInfo.name)}
                       >
                         {/* IMAGE */}
                         <div className="aspect-video w-full overflow-hidden rounded-xl">
